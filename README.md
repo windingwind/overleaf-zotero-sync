@@ -1,5 +1,14 @@
 # Link Overleaf project with Zotero
 
+[Overleaf](https://www.overleaf.com/) is a popular online LaTeX editor. It has [built-in support](https://www.overleaf.com/learn/how-to/How_to_link_Zotero_to_your_Overleaf_account) for syncronizing bibliography from Zotero, however:
+
+- It requires the subscription plan
+- Only the creator of the linked file can update the citations
+
+Other options include using the [Zotero Better BibTeX](https://retorque.re/zotero-better-bibtex/) plugin, which allows you to export citations in BibTeX format and then manually update the citations in Overleaf. However, this requires manual steps and can bring inconsistencies if the bibliography is updated by multiple users.
+
+This application allows you to link your Overleaf project with a Zotero library or collection, and update the citations in the project without requiring an Overleaf subscription. All credentials are used and stored locally.
+
 ![teaser](https://github.com/user-attachments/assets/3d7b7a7d-2728-48b6-a867-17f975109d18)
 
 ## Pre-requisites
@@ -14,7 +23,7 @@
 > - Zotero desktop app is not required for updating citations in Overleaf
 > - Overleaf subscription is not required
 
-## Steps to link Overleaf with Zotero
+## Use locally
 
 > [!note]
 >
@@ -45,10 +54,20 @@
 
 1. Execute the downloaded file (double-click or run from terminal)
 2. If you are running it for the first time, it will prompt you to enter the Overleaf token, project name, Overleaf Git URL, and Zotero library URL
-   > [!note]
    > If you are using a group library, you will need to authorize the application to read access to the group library.
 3. If you have already set up the credentials, it will prompt you to select the project you want to update citations for
 4. Wait for the application to finish updating the citations in the Overleaf project
+
+## Use in Google Colab
+
+You can also use this application in Google Colab without downloading the executable file. This is useful if you want to run the application on a remote server or if you don't want to install it locally.
+
+To use it in Google Colab, you need to follow these steps:
+
+1. Open the [Colab notebook](https://colab.research.google.com/github/windingwind/overleaf-zotero-sync/blob/main/notebook/main.ipynb) of this repository
+2. Click `Runtime` -> `Run all` to run the notebook
+3. When prompted, enter the Overleaf token, project name, Overleaf Git URL, and Zotero library URL
+   > If you are using a group library, you will need to authorize the application to read access to the group library.
 
 ## Disclaimer
 
