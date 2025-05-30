@@ -1,0 +1,136 @@
+name: Build and Release Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Inject version constant into source (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = "${{ steps.get_version.outputs.version }}"
+          Write-Host "Injecting version $version into src\main.py"
+          (Get-Content src\main.py) -replace "__OZS_VERSION__", $version | Set-Content src\main.py
+
+      - name: Inject version constant into source (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+          echo "Injecting version $version into src/main.py"
+          sed -i "s/__OZS_VERSION__/$version/g" src/main.py
+
+      - name: Inject version constant into source (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+          echo "Injecting version $version into src/main.py"
+          sed -i '' "s/__OZS_VERSION__/$version/g" src/main.py
+
+      - name: Build executable
+        run: pyinstaller main.spec
+
+      - name: Rename executable (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $version = "${{ github.ref }}".Split("/")[-1]
+          $platform = "windows"
+          Rename-Item -Path "dist\main.exe" -NewName "overleaf-zotero-sync_${version}_${platform}.exe"
+
+      - name: Rename executable (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          version="${GITHUB_REF##*/}"
+          platform=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
+          mv "dist/main" "dist/overleaf-zotero-sync_${version}_${platform}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-binary
+          path: dist/overleaf-zotero-sync_*
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required for full git history and all tags
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Generate changelog from commits
+        id: changelog
+        run: |
+          tag="${GITHUB_REF##*/}"
+          echo "Current tag: $tag"
+
+          prev_tag=$(git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)" 2>/dev/null || echo "")
+
+          if [[ -z "$prev_tag" ]]; then
+            echo "No previous tag found. Generating changelog from beginning of repo."
+            log=$(git log "$tag" --pretty=format:"- %s (%an)")
+          else
+            echo "Previous tag: $prev_tag"
+            echo "Generating changelog between $prev_tag and $tag"
+            log=$(git log "$prev_tag..$tag" --pretty=format:"- %s (%an)")
+          fi
+
+          {
+            echo "changelog<<EOF"
+            echo "$log"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.changelog.outputs.changelog }}
+          files: dist/**/*.*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

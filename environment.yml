@@ -1,0 +1,11 @@
+name: overleaf-zotero-sync
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - requests
+  - requests-oauthlib
+  - gitpython
+  - rich
+  - inquirer
