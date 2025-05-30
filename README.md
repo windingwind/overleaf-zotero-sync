@@ -1,5 +1,7 @@
 # Link Overleaf project with Zotero
 
+![teaser](https://github.com/user-attachments/assets/3d7b7a7d-2728-48b6-a867-17f975109d18)
+
 ## Pre-requisites
 
 1. Have a Zotero account (<https://www.zotero.org/>)
