@@ -1735,8 +1735,10 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
         }
 
         showProgress();
-        const syncButton = document.querySelector(".sync-button");
-        syncButton.disabled = true;
+        const syncButtons = document.querySelectorAll(".sync-button");
+        for (const button of syncButtons) {
+          button.disabled = true;
+        }
 
         const repoPath = "/overleaf-repo";
 
@@ -1807,7 +1809,9 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           addStatus(`Error: ${error.message}`, "error");
           addLog(`Full error: ${error.stack}`);
         } finally {
-          syncButton.disabled = false;
+          for (const button of syncButtons) {
+            button.disabled = false;
+          }
         }
       }
 
