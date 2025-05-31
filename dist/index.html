@@ -804,12 +804,14 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
         return data;
       }
 
-      function saveZoteroCredential(userId, apiKey) {
+      function saveZoteroCredential(userId, apiKey, data = null, save = true) {
         if (!document.getElementById("saveCredentials").checked) {
           return;
         }
 
-        const data = getStorageData();
+        if (!data) {
+          data = getStorageData();
+        }
         const now = new Date().toISOString();
 
         const existingIndex = data.zotero_credentials.findIndex(
@@ -827,16 +829,20 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           });
         }
 
-        saveToStorage(data);
-        updateSavedCredentialsUI();
+        if (save) {
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+        }
       }
 
-      function saveOverleafToken(token) {
+      function saveOverleafToken(token, data = null, save = true) {
         if (!document.getElementById("saveCredentials").checked) {
           return;
         }
 
-        const data = getStorageData();
+        if (!data) {
+          data = getStorageData();
+        }
         const now = new Date().toISOString();
 
         const existingIndex = data.overleaf_tokens.findIndex(
@@ -853,16 +859,27 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           });
         }
 
-        saveToStorage(data);
-        updateSavedCredentialsUI();
+        if (save) {
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+        }
       }
 
-      function saveOverleafProject(gitUrl, token, zoteroUrl, projectName = "") {
+      function saveOverleafProject(
+        gitUrl,
+        token,
+        zoteroUrl,
+        projectName = "",
+        data = null,
+        save = true
+      ) {
         if (!document.getElementById("saveCredentials").checked) {
           return;
         }
 
-        const data = getStorageData();
+        if (!data) {
+          data = getStorageData();
+        }
         const now = new Date().toISOString();
 
         const finalProjectName =
@@ -904,8 +921,10 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           });
         }
 
-        saveToStorage(data);
-        updateSavedCredentialsUI();
+        if (save) {
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+        }
       }
 
       function updateOAuthVisibility() {
@@ -1528,10 +1547,11 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
 
           while (nextUrl) {
             try {
+              const urlToDisplay = nextUrl.replace(/&key=[^&]*/, "&key=***");
               addLog(
                 `Fetching ${
                   collId ? "collection " + collId : "library"
-                }: ${nextUrl}`
+                }: ${urlToDisplay}`
               );
 
               if (!nextUrl.includes("key=")) {
@@ -1791,7 +1811,8 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           );
 
           if (document.getElementById("saveCredentials").checked) {
-            saveZoteroCredential(zoteroUserId, zoteroApiKey);
+            const data = getStorageData();
+            saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
             const projectName = document
               .getElementById("projectName")
               .value.trim();
@@ -1799,9 +1820,13 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               overleafGitUrl,
               overleafToken,
               zoteroUrl,
-              projectName
+              projectName,
+              data,
+              false
             );
-            saveOverleafToken(overleafToken);
+            saveOverleafToken(overleafToken, data, false);
+            saveToStorage(data);
+            updateSavedCredentialsUI();
             addLog("Credentials, project, and token saved successfully");
           }
         } catch (error) {
