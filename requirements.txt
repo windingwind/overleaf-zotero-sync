@@ -1,5 +1,0 @@
-requests
-requests-oauthlib
-gitpython
-rich
-inquirer
