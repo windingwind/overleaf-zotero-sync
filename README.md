@@ -2,6 +2,10 @@
 
 ## Usage
 
+Demo: https://windingwind.github.io/overleaf-zotero-sync/
+
+Note that it is recommended to deploy the application on your own server, as it can store your Zotero and Overleaf credentials in local storage and websites from the same origin can access them.
+
 ## Motivation
 
 [Overleaf](https://www.overleaf.com/) is a popular online LaTeX editor. It has [built-in support](https://www.overleaf.com/learn/how-to/How_to_link_Zotero_to_your_Overleaf_account) for synchronizing bibliography from Zotero, however:
