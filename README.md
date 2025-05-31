@@ -1,5 +1,8 @@
 # Link Overleaf project with Zotero
 
+<img width="1420" alt="image" src="https://github.com/user-attachments/assets/d4ec301b-3ac2-4b50-a77a-3393b30e2ce8" />
+
+
 ## Usage
 
 Demo: https://windingwind.github.io/overleaf-zotero-sync/
@@ -16,8 +19,6 @@ Note that it is recommended to deploy the application on your own server, as it 
 Other options include using the [Zotero Better BibTeX](https://retorque.re/zotero-better-bibtex/) plugin, which allows you to export citations in BibTeX format and then manually update the citations in Overleaf. However, this requires manual steps and can bring inconsistencies if the bibliography is updated by multiple users.
 
 This application allows you to link your Overleaf project with a Zotero library or collection, and update the citations in the project without requiring an Overleaf subscription. All credentials are used and stored locally.
-
-![teaser](https://github.com/user-attachments/assets/3d7b7a7d-2728-48b6-a867-17f975109d18)
 
 ## Pre-requisites
 
