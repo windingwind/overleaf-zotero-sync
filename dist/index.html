@@ -165,6 +165,19 @@
         justify-content: center;
       }
 
+      .copy-button {
+        background: linear-gradient(135deg, #ff7043 0%, #e64a19 100%);
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 14px;
+        font-size: 16px;
+        justify-content: center;
+      }
+
+      .copy-button:hover {
+        box-shadow: 0 4px 12px rgba(255, 112, 67, 0.4);
+      }
+
       .oauth-button {
         background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
         margin-bottom: 10px;
@@ -446,6 +459,15 @@
         <button class="sync-button" onclick="performSync()">
           <span class="icon">🔄</span> Start Sync
         </button>
+
+        <button class="copy-button" onclick="copyBibliography()">
+          <span class="icon">📋</span> Copy Bibliography Only
+        </button>
+        
+        <div class="help-text" style="text-align: center; margin-bottom: 15px;">
+          <strong>Sync:</strong> Updates your Overleaf project via Git<br>
+          <strong>Copy:</strong> Copies the bibliography to clipboard (no Overleaf account needed)
+        </div>
 
         <!-- Save Settings Section -->
         <div class="save-settings">
@@ -1840,6 +1862,86 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
         }
       }
 
+      // Copy bibliography function
+      async function copyBibliography() {
+        const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
+        if (zoteroUrl) {
+          parseZoteroUrl();
+        }
+
+        const zoteroUserId = document
+          .getElementById("zoteroUserId")
+          .value.trim();
+        const zoteroApiKey = document
+          .getElementById("zoteroApiKey")
+          .value.trim();
+        const zoteroCollection = document
+          .getElementById("zoteroCollection")
+          .value.trim();
+        const isGroup = document.getElementById("isGroup").checked;
+
+        if (!zoteroUserId || !zoteroApiKey) {
+          alert("Please provide Zotero User ID and API Key");
+          return;
+        }
+
+        showProgress();
+        const copyButton = document.querySelector(".copy-button");
+        copyButton.disabled = true;
+
+        try {
+          addStatus("Fetching bibliography from Zotero...", "info");
+          setProgress(50);
+          const bibContent = await fetchZoteroBib(
+            zoteroUserId,
+            zoteroApiKey,
+            zoteroCollection || null,
+            isGroup
+          );
+          addStatus("Bibliography fetched successfully", "success");
+
+          setProgress(80);
+          // Copy to clipboard
+          try {
+            await navigator.clipboard.writeText(bibContent);
+            addStatus("Bibliography copied to clipboard!", "success");
+          } catch (clipboardError) {
+            // Fallback for older browsers or denied clipboard access
+            const textArea = document.createElement('textarea');
+            textArea.value = bibContent;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+              document.execCommand('copy');
+              addStatus("Bibliography copied to clipboard! (fallback method)", "success");
+            } catch (fallbackError) {
+              addStatus("Could not copy to clipboard. Please copy manually from the logs below.", "error");
+              addLog("=== BIBLIOGRAPHY CONTENT ===");
+              addLog(bibContent);
+              addLog("=== END OF BIBLIOGRAPHY ===");
+            }
+            document.body.removeChild(textArea);
+          }
+          setProgress(100);
+
+          if (document.getElementById("saveCredentials").checked) {
+            const data = getStorageData();
+            saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
+            saveToStorage(data);
+            updateSavedCredentialsUI();
+            addLog("Credentials saved successfully");
+          }
+        } catch (error) {
+          console.error("Copy error:", error);
+          addStatus(`Error: ${error.message}`, "error");
+          addLog(`Full error: ${error.stack}`);
+        } finally {
+          copyButton.disabled = false;
+        }
+      }
+
       function initUI() {
         document
           .getElementById("savedOverleafProjects")
@@ -1860,6 +1962,7 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
 
       // Make functions available globally
       window.performSync = performSync;
+      window.copyBibliography = copyBibliography;
       window.startOAuth = startOAuth;
       window.cancelOAuth = cancelOAuth;
       window.completeOAuth = completeOAuth;
