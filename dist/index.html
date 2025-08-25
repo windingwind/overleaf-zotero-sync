@@ -1637,6 +1637,35 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
       }
 
       // Git operations
+      async function removeDirectory(dirPath) {
+        try {
+          const files = await pfs.readdir(dirPath);
+          
+          for (const file of files) {
+            const filePath = `${dirPath}/${file}`;
+            try {
+              const stat = await pfs.stat(filePath);
+              if (stat.isDirectory()) {
+                await removeDirectory(filePath); // Recursive call
+              } else {
+                await pfs.unlink(filePath); // Remove file
+              }
+            } catch (error) {
+              // Continue with other files even if one fails
+              addLog(`Warning: Could not remove ${filePath}: ${error.message}`);
+            }
+          }
+          
+          // Remove the now-empty directory
+          await pfs.rmdir(dirPath);
+        } catch (error) {
+          if (error.code !== 'ENOENT') {
+            throw error;
+          }
+          // Directory doesn't exist, which is fine
+        }
+      }
+
       async function cloneOrUpdateRepo(gitUrl, token, repoPath) {
         const parsed = new URL(gitUrl);
         const authUrl = `${parsed.protocol}//git:${token}@${parsed.host}${parsed.pathname}`;
@@ -1645,24 +1674,104 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           const gitDir = `${repoPath}/.git`;
           try {
             await pfs.stat(gitDir);
-            addLog("Repository exists, pulling latest changes...");
+            addLog("Repository exists, checking if it's complete...");
 
-            await git.pull({
-              fs,
-              http: window.http,
-              dir: repoPath,
-              url: authUrl,
-              author: {
-                name: "Zotero Sync",
-                email: "sync@zotero-overleaf.local",
-              },
-              singleBranch: true,
-              corsProxy: CORS_PROXY,
-            });
+            // Check if repository has any branches (indicates it's properly cloned)
+            let hasValidBranches = false;
+            try {
+              const branches = await git.listBranches({ fs, dir: repoPath });
+              hasValidBranches = branches && branches.length > 0;
+              if (hasValidBranches) {
+                addLog(`Found ${branches.length} branch(es): ${branches.join(', ')}`);
+              }
+            } catch (branchError) {
+              addLog(`Could not list branches: ${branchError.message}`);
+              hasValidBranches = false;
+            }
 
-            addLog("Repository updated successfully");
+            if (!hasValidBranches) {
+              // Repository exists but has no branches - likely corrupted/incomplete
+              addLog("Repository appears incomplete (no branches found). Re-cloning...");
+              
+              // Remove the corrupted repository with force
+              try {
+                await removeDirectory(repoPath);
+                addLog("Removed incomplete repository");
+              } catch (removeError) {
+                addLog(`Warning: Could not remove incomplete repository: ${removeError.message}`);
+              }
+
+              // Re-clone fresh with progress logging
+              addLog(`Starting clone from: ${parsed.host}${parsed.pathname}`);
+              await git.clone({
+                fs,
+                http: window.http,
+                dir: repoPath,
+                url: authUrl,
+                singleBranch: true,
+                depth: 1,
+                corsProxy: CORS_PROXY,
+                onProgress: (progress) => {
+                  if (progress.phase) {
+                    addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                  }
+                },
+                onMessage: (message) => {
+                  addLog(`Git: ${message}`);
+                },
+              });
+              
+              addLog("Repository re-cloned successfully");
+            } else {
+              // Repository is valid, proceed with normal update process
+              addLog("Repository is complete, resetting to clean state...");
+
+              // Always force checkout to current branch to ensure clean state
+              try {
+                const currentBranch = branches[0]; // Use the first available branch
+                addLog(`Using branch: ${currentBranch}`);
+
+                // Force checkout to the current branch to clean working directory
+                addLog("Checking out to clean working directory...");
+                await git.checkout({
+                  fs,
+                  dir: repoPath,
+                  ref: currentBranch,
+                  force: true
+                });
+                addLog("Working directory reset to clean state");
+              } catch (checkoutError) {
+                addLog(`Warning: Could not reset working directory: ${checkoutError.message}`);
+                // Continue anyway, pull might still work
+              }
+
+              // Now pull the latest changes
+              addLog(`Pulling latest changes from: ${parsed.host}${parsed.pathname}`);
+              await git.pull({
+                fs,
+                http: window.http,
+                dir: repoPath,
+                url: authUrl,
+                author: {
+                  name: "Zotero Sync",
+                  email: "sync@zotero-overleaf.local",
+                },
+                singleBranch: true,
+                corsProxy: CORS_PROXY,
+                onProgress: (progress) => {
+                  if (progress.phase) {
+                    addLog(`Pull progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                  }
+                },
+                onMessage: (message) => {
+                  addLog(`Git: ${message}`);
+                },
+              });
+
+              addLog("Repository updated successfully");
+            }
           } catch (e) {
-            addLog("Cloning repository...");
+            addLog(`Cloning repository from: ${parsed.host}${parsed.pathname}`);
 
             await git.clone({
               fs,
@@ -1672,6 +1781,14 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               singleBranch: true,
               depth: 1,
               corsProxy: CORS_PROXY,
+              onProgress: (progress) => {
+                if (progress.phase) {
+                  addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                }
+              },
+              onMessage: (message) => {
+                addLog(`Git: ${message}`);
+              },
             });
 
             addLog("Repository cloned successfully");
@@ -1928,10 +2045,27 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
 
           if (document.getElementById("saveCredentials").checked) {
             const data = getStorageData();
+            const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
+            const overleafToken = document.getElementById("overleafToken").value.trim();
+            const projectName = document.getElementById("projectName").value.trim();
+            const overleafGitUrl = document.getElementById("overleafGitUrl").value.trim();
+            
+            // Save Zotero credentials
             saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
+            
+            // Save Overleaf token if provided
+            if (overleafToken) {
+              saveOverleafToken(overleafToken, data, false);
+            }
+            
+            // Save project if we have enough info
+            if (overleafGitUrl && overleafToken && zoteroUrl) {
+              saveOverleafProject(overleafGitUrl, overleafToken, zoteroUrl, projectName, data, false);
+            }
+            
             saveToStorage(data);
             updateSavedCredentialsUI();
-            addLog("Credentials saved successfully");
+            addLog("All credentials and project data saved successfully");
           }
         } catch (error) {
           console.error("Copy error:", error);
@@ -1939,6 +2073,38 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
           addLog(`Full error: ${error.stack}`);
         } finally {
           copyButton.disabled = false;
+        }
+      }
+
+      // Clear repository cache function
+      async function clearRepositoryCache() {
+        const repoPath = "/overleaf-repo";
+        
+        if (!confirm("This will clear all cached repository data. You'll need to clone the repository fresh on next sync. Continue?")) {
+          return;
+        }
+
+        try {
+          addLog("Clearing repository cache...");
+          addStatus("Clearing repository cache...", "info");
+          
+          // Remove the entire repository directory
+          try {
+            await removeDirectory(repoPath);
+            addLog("Repository cache cleared successfully");
+            addStatus("Repository cache cleared! Next sync will clone fresh.", "success");
+          } catch (error) {
+            if (error.code === 'ENOENT') {
+              addLog("No repository cache found to clear");
+              addStatus("No repository cache found - already clean!", "info");
+            } else {
+              throw error;
+            }
+          }
+        } catch (error) {
+          console.error("Clear cache error:", error);
+          addStatus(`Error clearing cache: ${error.message}`, "error");
+          addLog(`Full error: ${error.stack}`);
         }
       }
 
@@ -1963,6 +2129,7 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
       // Make functions available globally
       window.performSync = performSync;
       window.copyBibliography = copyBibliography;
+      window.clearRepositoryCache = clearRepositoryCache;
       window.startOAuth = startOAuth;
       window.cancelOAuth = cancelOAuth;
       window.completeOAuth = completeOAuth;
