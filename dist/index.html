@@ -178,6 +178,19 @@
         box-shadow: 0 4px 12px rgba(255, 112, 67, 0.4);
       }
 
+      .clear-cache-button {
+        background: linear-gradient(135deg, #ffc107 0%, #e68900 100%);
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 14px;
+        font-size: 16px;
+        justify-content: center;
+      }
+
+      .clear-cache-button:hover {
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+      }
+
       .oauth-button {
         background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
         margin-bottom: 10px;
@@ -237,6 +250,12 @@
         background: #ffebee;
         color: #d32f2f;
         border: 1px solid #ffcdd2;
+      }
+
+      .status-warning {
+        background: #fff3e0;
+        color: #f57c00;
+        border: 1px solid #ffcc02;
       }
 
       .logs {
@@ -463,10 +482,15 @@
         <button class="copy-button" onclick="copyBibliography()">
           <span class="icon">📋</span> Copy Bibliography Only
         </button>
+
+        <button class="clear-cache-button" onclick="clearRepositoryCache()" style="background: linear-gradient(135deg, #ffc107 0%, #e68900 100%); margin-bottom: 10px;">
+          <span class="icon">🗑️</span> Clear Repository Cache
+        </button>
         
         <div class="help-text" style="text-align: center; margin-bottom: 15px;">
           <strong>Sync:</strong> Updates your Overleaf project via Git<br>
-          <strong>Copy:</strong> Copies the bibliography to clipboard (no Overleaf account needed)
+          <strong>Copy:</strong> Copies the bibliography to clipboard (no Overleaf account needed)<br>
+          <strong>Clear Cache:</strong> Removes cached repository data (fixes Git conflicts)
         </div>
 
         <!-- Save Settings Section -->
@@ -1430,6 +1454,7 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
         let icon = "📌";
         if (type === "success") icon = "✅";
         if (type === "error") icon = "❌";
+        if (type === "warning") icon = "⚠️";
 
         messageDiv.innerHTML = `<span class="icon">${icon}</span> ${message}`;
         statusDiv.appendChild(messageDiv);
@@ -1723,52 +1748,139 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               
               addLog("Repository re-cloned successfully");
             } else {
-              // Repository is valid, proceed with normal update process
-              addLog("Repository is complete, resetting to clean state...");
+              // Repository is valid, but we need to handle conflicts properly
+              addLog("Repository is complete, resolving any conflicts and updating...");
 
-              // Always force checkout to current branch to ensure clean state
               try {
-                const currentBranch = branches[0]; // Use the first available branch
-                addLog(`Using branch: ${currentBranch}`);
+                // First, check the working directory status
+                const status = await git.statusMatrix({
+                  fs,
+                  dir: repoPath,
+                });
 
-                // Force checkout to the current branch to clean working directory
-                addLog("Checking out to clean working directory...");
+                const conflicts = status.filter(([filepath, head, workdir, stage]) => 
+                  head !== workdir || head !== stage || workdir !== stage
+                );
+
+                if (conflicts.length > 0) {
+                  addLog(`Found ${conflicts.length} local changes/conflicts:`);
+                  conflicts.forEach(([filepath]) => {
+                    addLog(`  - ${filepath}`);
+                  });
+                  
+                  addStatus(`Resolving ${conflicts.length} local conflicts...`, "warning");
+
+                  // Reset the working directory by removing conflicting files
+                  for (const [filepath] of conflicts) {
+                    try {
+                      const fullPath = `${repoPath}/${filepath}`;
+                      await pfs.unlink(fullPath);
+                      addLog(`Removed conflicting file: ${filepath}`);
+                    } catch (removeError) {
+                      // File might not exist or be a directory
+                      try {
+                        await removeDirectory(`${repoPath}/${filepath}`);
+                        addLog(`Removed conflicting directory: ${filepath}`);
+                      } catch (dirError) {
+                        addLog(`Could not remove ${filepath}: ${removeError.message}`);
+                      }
+                    }
+                  }
+
+                  // Reset the index
+                  try {
+                    for (const [filepath] of conflicts) {
+                      try {
+                        await git.resetIndex({
+                          fs,
+                          dir: repoPath,
+                          filepath: filepath,
+                        });
+                      } catch (resetError) {
+                        addLog(`Could not reset index for ${filepath}: ${resetError.message}`);
+                      }
+                    }
+                  } catch (resetError) {
+                    addLog(`Index reset failed: ${resetError.message}`);
+                  }
+                  
+                  addStatus("Local conflicts resolved", "success");
+                }
+
+                // Now fetch the latest changes
+                addLog("Fetching latest changes...");
+                await git.fetch({
+                  fs,
+                  http: window.http,
+                  dir: repoPath,
+                  url: authUrl,
+                  corsProxy: CORS_PROXY,
+                });
+
+                // Get the current and remote branches
+                const currentBranch = branches[0];
+                addLog(`Working with branch: ${currentBranch}`);
+
+                // Get the remote commit hash
+                const remoteRef = `origin/${currentBranch}`;
+                let remoteCommit;
+                try {
+                  remoteCommit = await git.resolveRef({
+                    fs,
+                    dir: repoPath,
+                    ref: remoteRef,
+                  });
+                  addLog(`Remote commit: ${remoteCommit.substring(0, 8)}`);
+                } catch (refError) {
+                  addLog(`Could not resolve remote ref: ${refError.message}`);
+                  throw refError;
+                }
+
+                // Force reset to the remote commit
                 await git.checkout({
                   fs,
                   dir: repoPath,
-                  ref: currentBranch,
-                  force: true
+                  ref: remoteCommit,
+                  force: true,
                 });
-                addLog("Working directory reset to clean state");
-              } catch (checkoutError) {
-                addLog(`Warning: Could not reset working directory: ${checkoutError.message}`);
-                // Continue anyway, pull might still work
+
+                addLog("Repository updated successfully (forced to remote state)");
+
+              } catch (updateError) {
+                addLog(`Update failed: ${updateError.message}`);
+                addLog("Attempting complete repository refresh...");
+                
+                // If all conflict resolution fails, remove and re-clone
+                try {
+                  await removeDirectory(repoPath);
+                  addLog("Removed problematic repository");
+                  
+                  // Re-clone fresh
+                  addLog(`Re-cloning from: ${parsed.host}${parsed.pathname}`);
+                  await git.clone({
+                    fs,
+                    http: window.http,
+                    dir: repoPath,
+                    url: authUrl,
+                    singleBranch: true,
+                    depth: 1,
+                    corsProxy: CORS_PROXY,
+                    onProgress: (progress) => {
+                      if (progress.phase) {
+                        addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                      }
+                    },
+                    onMessage: (message) => {
+                      addLog(`Git: ${message}`);
+                    },
+                  });
+                  
+                  addLog("Repository re-cloned successfully after conflict");
+                } catch (cloneError) {
+                  addLog(`Re-clone failed: ${cloneError.message}`);
+                  throw cloneError;
+                }
               }
-
-              // Now pull the latest changes
-              addLog(`Pulling latest changes from: ${parsed.host}${parsed.pathname}`);
-              await git.pull({
-                fs,
-                http: window.http,
-                dir: repoPath,
-                url: authUrl,
-                author: {
-                  name: "Zotero Sync",
-                  email: "sync@zotero-overleaf.local",
-                },
-                singleBranch: true,
-                corsProxy: CORS_PROXY,
-                onProgress: (progress) => {
-                  if (progress.phase) {
-                    addLog(`Pull progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
-                  }
-                },
-                onMessage: (message) => {
-                  addLog(`Git: ${message}`);
-                },
-              });
-
-              addLog("Repository updated successfully");
             }
           } catch (e) {
             addLog(`Cloning repository from: ${parsed.host}${parsed.pathname}`);
