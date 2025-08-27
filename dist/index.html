@@ -1703,8 +1703,9 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
 
             // Check if repository has any branches (indicates it's properly cloned)
             let hasValidBranches = false;
+            let branches = [];
             try {
-              const branches = await git.listBranches({ fs, dir: repoPath });
+              branches = await git.listBranches({ fs, dir: repoPath });
               hasValidBranches = branches && branches.length > 0;
               if (hasValidBranches) {
                 addLog(`Found ${branches.length} branch(es): ${branches.join(', ')}`);
