@@ -1952,11 +1952,19 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
 
             addLog("Pushing to Overleaf...");
 
+            // Get current branch name for push
+            const currentBranch = await git.currentBranch({
+              fs,
+              dir: repoPath,
+              fullname: false,
+            });
+
             await git.push({
               fs,
               http: window.http,
               dir: repoPath,
               url: authUrl,
+              ref: currentBranch,
               corsProxy: CORS_PROXY,
             });
 
