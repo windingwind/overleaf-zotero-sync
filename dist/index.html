@@ -1953,11 +1953,27 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
             addLog("Pushing to Overleaf...");
 
             // Get current branch name for push
-            const currentBranch = await git.currentBranch({
-              fs,
-              dir: repoPath,
-              fullname: false,
-            });
+            let currentBranch;
+            try {
+              currentBranch = await git.currentBranch({
+                fs,
+                dir: repoPath,
+                fullname: false,
+              });
+              
+              if (!currentBranch) {
+                // Fallback: try to get the default branch
+                const branches = await git.listBranches({ fs, dir: repoPath });
+                currentBranch = branches[0] || 'master'; // Default to master if no branches found
+                addLog(`No current branch found, using fallback: ${currentBranch}`);
+              } else {
+                addLog(`Pushing branch: ${currentBranch}`);
+              }
+            } catch (branchError) {
+              addLog(`Could not determine current branch: ${branchError.message}`);
+              currentBranch = 'master'; // Ultimate fallback
+              addLog(`Using fallback branch: ${currentBranch}`);
+            }
 
             await git.push({
               fs,
