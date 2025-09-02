@@ -1975,13 +1975,34 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               addLog(`Using fallback branch: ${currentBranch}`);
             }
 
+            // First, try to pull latest changes and merge
+            try {
+              addLog("Pulling latest changes before push...");
+              await git.pull({
+                fs,
+                http: window.http,
+                dir: repoPath,
+                url: authUrl,
+                ref: currentBranch,
+                author: {
+                  name: "Zotero Sync",
+                  email: "sync@zotero-overleaf.local",
+                },
+                corsProxy: CORS_PROXY,
+              });
+              addLog("Successfully pulled and merged latest changes");
+            } catch (pullError) {
+              addLog(`Pull failed: ${pullError.message}`);
+              addLog("Attempting push without pull...");
+            }
+
+            // Now attempt the push (without force)
             await git.push({
               fs,
               http: window.http,
               dir: repoPath,
               url: authUrl,
               ref: currentBranch,
-              force: true,
               corsProxy: CORS_PROXY,
             });
 
