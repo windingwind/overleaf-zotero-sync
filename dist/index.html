@@ -1807,39 +1807,70 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
                   addStatus("Local conflicts resolved", "success");
                 }
 
-                // Now fetch the latest changes
-                addLog("Fetching latest changes...");
-                await git.fetch({
-                  fs,
-                  http: window.http,
-                  dir: repoPath,
-                  url: authUrl,
-                  depth: 100,
-                  corsProxy: CORS_PROXY,
-                  onProgress: (progress) => {
-                    if (progress.phase) {
-                      addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
-                    }
-                  },
-                });
-
-                // Get the current and remote branches
+                // Get the current branch
                 const currentBranch = branches[0];
                 addLog(`Working with branch: ${currentBranch}`);
 
-                // Get the remote commit hash
-                const remoteRef = `origin/${currentBranch}`;
-                let remoteCommit;
-                try {
-                  remoteCommit = await git.resolveRef({
-                    fs,
-                    dir: repoPath,
-                    ref: remoteRef,
-                  });
-                  addLog(`Remote commit: ${remoteCommit.substring(0, 8)}`);
-                } catch (refError) {
-                  addLog(`Could not resolve remote ref: ${refError.message}`);
-                  throw refError;
+                // Now fetch the latest changes with adaptive depth
+                addLog("Fetching latest changes...");
+                let fetchDepth = 1;
+                let maxDepth = 1000; // Safety limit
+                let remoteCommit = null;
+                
+                while (fetchDepth <= maxDepth) {
+                  try {
+                    await git.fetch({
+                      fs,
+                      http: window.http,
+                      dir: repoPath,
+                      url: authUrl,
+                      depth: fetchDepth,
+                      corsProxy: CORS_PROXY,
+                      onProgress: (progress) => {
+                        if (progress.phase) {
+                          addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                        }
+                      },
+                    });
+                    
+                    // Try to resolve the remote commit
+                    try {
+                      remoteCommit = await git.resolveRef({
+                        fs,
+                        dir: repoPath,
+                        ref: `origin/${currentBranch}`,
+                      });
+                      addLog(`Remote commit resolved: ${remoteCommit.substring(0, 8)} with depth ${fetchDepth}`);
+                      break; // Success, we have the remote commit
+                    } catch (resolveError) {
+                      addLog(`Remote commit not yet resolved with depth ${fetchDepth}, trying deeper...`);
+                    }
+                  } catch (fetchError) {
+                    addLog(`Fetch failed with depth ${fetchDepth}: ${fetchError.message}`);
+                  }
+                  
+                  fetchDepth = Math.min(fetchDepth * 2, maxDepth);
+                  if (fetchDepth >= maxDepth) {
+                    addLog(`Reached maximum depth ${maxDepth}, using full fetch...`);
+                    await git.fetch({
+                      fs,
+                      http: window.http,
+                      dir: repoPath,
+                      url: authUrl,
+                      corsProxy: CORS_PROXY,
+                      onProgress: (progress) => {
+                        if (progress.phase) {
+                          addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                        }
+                      },
+                    });
+                    remoteCommit = await git.resolveRef({
+                      fs,
+                      dir: repoPath,
+                      ref: `origin/${currentBranch}`,
+                    });
+                    break;
+                  }
                 }
 
                 // Force reset to the remote commit
