@@ -1,1515 +1,1532 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zotero Overleaf Sync - Browser Version</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
 
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, sans-serif;
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        min-height: 100vh;
-        padding: 15px;
-        color: #333;
-        font-size: 14px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zotero Overleaf Sync - Browser Version</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      min-height: 100vh;
+      padding: 15px;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .main-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      backdrop-filter: blur(10px);
+      display: flex;
+      height: calc(100vh - 30px);
+      overflow: hidden;
+    }
+
+    .left-panel {
+      width: 50%;
+      padding: 25px;
+      overflow-y: auto;
+      border-right: 2px solid #e9ecef;
+    }
+
+    .right-panel {
+      width: 50%;
+      padding: 25px;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      color: #2a5298;
+      margin-bottom: 8px;
+      font-size: 1.8em;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 0.9em;
+    }
+
+    .form-section {
+      margin-bottom: 18px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #e9ecef;
+    }
+
+    .form-section h2 {
+      color: #2a5298;
+      margin-bottom: 12px;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+      color: #495057;
+      font-size: 0.85em;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="url"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #2a5298;
+      box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.1);
+    }
+
+    button {
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(42, 82, 152, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(42, 82, 152, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .sync-button {
+      width: 100%;
+      margin-block: 20px;
+      padding: 14px;
+      font-size: 16px;
+      justify-content: center;
+    }
+
+    .copy-button {
+      background: linear-gradient(135deg, #ff7043 0%, #e64a19 100%);
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 14px;
+      font-size: 16px;
+      justify-content: center;
+    }
+
+    .copy-button:hover {
+      box-shadow: 0 4px 12px rgba(255, 112, 67, 0.4);
+    }
+
+    .clear-cache-button {
+      background: linear-gradient(135deg, #ffc107 0%, #e68900 100%);
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 14px;
+      font-size: 16px;
+      justify-content: center;
+    }
+
+    .clear-cache-button:hover {
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+    }
+
+    .oauth-button {
+      background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+      margin-bottom: 10px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .oauth-button:hover {
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    .progress-container {
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2a5298 0%, #1e3c72 100%);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .status-message {
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .status-info {
+      background: #e3f2fd;
+      color: #1976d2;
+      border: 1px solid #bbdefb;
+    }
+
+    .status-success {
+      background: #e8f5e9;
+      color: #388e3c;
+      border: 1px solid #c8e6c9;
+    }
+
+    .status-error {
+      background: #ffebee;
+      color: #d32f2f;
+      border: 1px solid #ffcdd2;
+    }
+
+    .status-warning {
+      background: #fff3e0;
+      color: #f57c00;
+      border: 1px solid #ffcc02;
+    }
+
+    .logs {
+      flex: 1;
+      padding: 15px;
+      background: #fff;
+      border-radius: 8px;
+      overflow-y: auto;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #f0f0f0;
+      word-wrap: break-word;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .icon {
+      font-size: 1em;
+    }
+
+    .help-text {
+      font-size: 0.75em;
+      color: #6c757d;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      margin-bottom: 0;
+      cursor: pointer;
+      font-weight: normal;
+      font-size: 0.85em;
+    }
+
+    .auth-section {
+      background: #f0f7ff;
+      border: 2px solid #2a5298;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .oauth-instructions {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 6px;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 12px 0;
+      color: #666;
+      font-weight: 600;
+      font-size: 0.85em;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      display: inline-block;
+      width: 35%;
+      height: 1px;
+      background: #ddd;
+      vertical-align: middle;
+      margin: 0 8px;
+    }
+
+    .saved-credentials {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .saved-credentials .form-group {
+      flex: 1;
+    }
+
+    .saved-credentials button {
+      padding: 8px 12px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .save-settings {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #e9ecef;
+    }
+
+    .save-settings h3 {
+      margin-bottom: 8px;
+      color: #2a5298;
+      font-size: 1em;
+    }
+
+    .delete-button {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .delete-button:hover {
+      box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    details {
+      margin-top: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: #2a5298;
+      font-weight: 600;
+      font-size: 0.9em;
+      padding: 8px 0;
+    }
+
+    details[open] summary {
+      margin-bottom: 10px;
+    }
+
+    .compact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .output-title {
+      color: #2a5298;
+      font-size: 1.3em;
+      font-weight: 600;
+    }
+
+    .clear-logs {
+      background: #6c757d;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .status-container {
+      margin-bottom: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    /* Compact input styling */
+    .compact-input {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .compact-button {
+      padding: 6px 10px;
+      font-size: 11px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
       .main-container {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        max-width: 1400px;
-        width: 100%;
-        margin: 0 auto;
-        backdrop-filter: blur(10px);
-        display: flex;
-        height: calc(100vh - 30px);
-        overflow: hidden;
+        flex-direction: column;
+        height: auto;
+        max-height: none;
       }
 
-      .left-panel {
-        width: 50%;
-        padding: 25px;
-        overflow-y: auto;
-        border-right: 2px solid #e9ecef;
+      .left-panel,
+      .right-panel {
+        width: 100%;
       }
 
       .right-panel {
-        width: 50%;
-        padding: 25px;
-        background: #f8f9fa;
-        display: flex;
-        flex-direction: column;
+        max-height: 400px;
       }
+    }
+  </style>
+</head>
 
-      h1 {
-        color: #2a5298;
-        margin-bottom: 8px;
-        font-size: 1.8em;
-        text-align: center;
-      }
+<body>
+  <div class="main-container">
+    <!-- Left Panel - Configuration -->
+    <div class="left-panel">
+      <h1>📚 Zotero Overleaf Sync</h1>
+      <p class="subtitle">
+        Sync your Zotero bibliography with Overleaf projects in your browser
+      </p>
 
-      .subtitle {
-        text-align: center;
-        color: #666;
-        margin-bottom: 20px;
-        font-size: 0.9em;
-      }
+      <button class="sync-button" onclick="performSync()">
+        <span class="icon">🔄</span> Start Sync
+      </button>
 
-      .form-section {
-        margin-bottom: 18px;
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid #e9ecef;
-      }
+      <button class="copy-button" onclick="copyBibliography()">
+        <span class="icon">📋</span> Copy Bibliography Only
+      </button>
 
-      .form-section h2 {
-        color: #2a5298;
-        margin-bottom: 12px;
-        font-size: 1.1em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+      <button class="clear-cache-button" onclick="clearRepositoryCache()"
+        style="background: linear-gradient(135deg, #ffc107 0%, #e68900 100%); margin-bottom: 10px;">
+        <span class="icon">🗑️</span> Clear Repository Cache
+      </button>
 
-      .form-group {
-        margin-bottom: 12px;
-      }
+      <div class="help-text" style="text-align: center; margin-bottom: 15px;">
+        <strong>Sync:</strong> Updates your Overleaf project via Git<br>
+        <strong>Copy:</strong> Copies the bibliography to clipboard (no Overleaf account needed)<br>
+        <strong>Clear Cache:</strong> Removes cached repository data (fixes Git conflicts)
+      </div>
 
-      .form-row {
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-      }
-
-      .form-row .form-group {
-        flex: 1;
-        margin-bottom: 0;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 4px;
-        font-weight: 600;
-        color: #495057;
-        font-size: 0.85em;
-      }
-
-      input[type="text"],
-      input[type="password"],
-      input[type="url"],
-      select {
-        width: 100%;
-        padding: 8px 12px;
-        border: 2px solid #e0e0e0;
-        border-radius: 6px;
-        font-size: 13px;
-        transition: all 0.3s ease;
-        font-family: inherit;
-      }
-
-      input[type="text"]:focus,
-      input[type="password"]:focus,
-      input[type="url"]:focus,
-      select:focus {
-        outline: none;
-        border-color: #2a5298;
-        box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.1);
-      }
-
-      button {
-        background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-        color: white;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 2px 8px rgba(42, 82, 152, 0.3);
-      }
-
-      button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(42, 82, 152, 0.4);
-      }
-
-      button:active {
-        transform: translateY(0);
-      }
-
-      button:disabled {
-        background: #6c757d;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-
-      .sync-button {
-        width: 100%;
-        margin-block: 20px;
-        padding: 14px;
-        font-size: 16px;
-        justify-content: center;
-      }
-
-      .copy-button {
-        background: linear-gradient(135deg, #ff7043 0%, #e64a19 100%);
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 14px;
-        font-size: 16px;
-        justify-content: center;
-      }
-
-      .copy-button:hover {
-        box-shadow: 0 4px 12px rgba(255, 112, 67, 0.4);
-      }
-
-      .clear-cache-button {
-        background: linear-gradient(135deg, #ffc107 0%, #e68900 100%);
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 14px;
-        font-size: 16px;
-        justify-content: center;
-      }
-
-      .clear-cache-button:hover {
-        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
-      }
-
-      .oauth-button {
-        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-        margin-bottom: 10px;
-        width: 100%;
-        justify-content: center;
-      }
-
-      .oauth-button:hover {
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-      }
-
-      .progress-container {
-        margin-bottom: 15px;
-        display: none;
-      }
-
-      .progress-bar {
-        width: 100%;
-        height: 6px;
-        background: #e0e0e0;
-        border-radius: 3px;
-        overflow: hidden;
-        margin-bottom: 10px;
-      }
-
-      .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #2a5298 0%, #1e3c72 100%);
-        width: 0%;
-        transition: width 0.5s ease;
-      }
-
-      .status-message {
-        padding: 10px 15px;
-        border-radius: 6px;
-        margin-bottom: 8px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-      }
-
-      .status-info {
-        background: #e3f2fd;
-        color: #1976d2;
-        border: 1px solid #bbdefb;
-      }
-
-      .status-success {
-        background: #e8f5e9;
-        color: #388e3c;
-        border: 1px solid #c8e6c9;
-      }
-
-      .status-error {
-        background: #ffebee;
-        color: #d32f2f;
-        border: 1px solid #ffcdd2;
-      }
-
-      .status-warning {
-        background: #fff3e0;
-        color: #f57c00;
-        border: 1px solid #ffcc02;
-      }
-
-      .logs {
-        flex: 1;
-        padding: 15px;
-        background: #fff;
-        border-radius: 8px;
-        overflow-y: auto;
-        font-family: "Courier New", Courier, monospace;
-        font-size: 12px;
-        border: 1px solid #e0e0e0;
-      }
-
-      .log-entry {
-        padding: 4px 0;
-        border-bottom: 1px solid #f0f0f0;
-        word-wrap: break-word;
-      }
-
-      .log-entry:last-child {
-        border-bottom: none;
-      }
-
-      .icon {
-        font-size: 1em;
-      }
-
-      .help-text {
-        font-size: 0.75em;
-        color: #6c757d;
-        margin-top: 3px;
-        line-height: 1.3;
-      }
-
-      .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 8px;
-      }
-
-      input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-      }
-
-      .checkbox-group label {
-        margin-bottom: 0;
-        cursor: pointer;
-        font-weight: normal;
-        font-size: 0.85em;
-      }
-
-      .auth-section {
-        background: #f0f7ff;
-        border: 2px solid #2a5298;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-      }
-
-      .oauth-instructions {
-        display: none;
-        margin-top: 10px;
-        padding: 10px;
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 6px;
-      }
-
-      .divider {
-        text-align: center;
-        margin: 12px 0;
-        color: #666;
-        font-weight: 600;
-        font-size: 0.85em;
-      }
-
-      .divider::before,
-      .divider::after {
-        content: "";
-        display: inline-block;
-        width: 35%;
-        height: 1px;
-        background: #ddd;
-        vertical-align: middle;
-        margin: 0 8px;
-      }
-
-      .saved-credentials {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-
-      .saved-credentials .form-group {
-        flex: 1;
-      }
-
-      .saved-credentials button {
-        padding: 8px 12px;
-        font-size: 12px;
-        white-space: nowrap;
-      }
-
-      .save-settings {
-        background: #f8f9fa;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #e9ecef;
-      }
-
-      .save-settings h3 {
-        margin-bottom: 8px;
-        color: #2a5298;
-        font-size: 1em;
-      }
-
-      .delete-button {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        padding: 6px 12px;
-        font-size: 12px;
-      }
-
-      .delete-button:hover {
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-      }
-
-      details {
-        margin-top: 12px;
-      }
-
-      summary {
-        cursor: pointer;
-        color: #2a5298;
-        font-weight: 600;
-        font-size: 0.9em;
-        padding: 8px 0;
-      }
-
-      details[open] summary {
-        margin-bottom: 10px;
-      }
-
-      .compact-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      .output-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e9ecef;
-      }
-
-      .output-title {
-        color: #2a5298;
-        font-size: 1.3em;
-        font-weight: 600;
-      }
-
-      .clear-logs {
-        background: #6c757d;
-        padding: 6px 12px;
-        font-size: 12px;
-      }
-
-      .status-container {
-        margin-bottom: 15px;
-        max-height: 200px;
-        overflow-y: auto;
-      }
-
-      /* Compact input styling */
-      .compact-input {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-
-      .compact-button {
-        padding: 6px 10px;
-        font-size: 11px;
-      }
-
-      /* Responsive adjustments */
-      @media (max-width: 1200px) {
-        .main-container {
-          flex-direction: column;
-          height: auto;
-          max-height: none;
-        }
-
-        .left-panel,
-        .right-panel {
-          width: 100%;
-        }
-
-        .right-panel {
-          max-height: 400px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="main-container">
-      <!-- Left Panel - Configuration -->
-      <div class="left-panel">
-        <h1>📚 Zotero Overleaf Sync</h1>
-        <p class="subtitle">
-          Sync your Zotero bibliography with Overleaf projects in your browser
+      <!-- Save Settings Section -->
+      <div class="save-settings">
+        <h3>Settings Management</h3>
+        <div class="checkbox-group">
+          <input type="checkbox" id="saveCredentials" checked />
+          <label for="saveCredentials">Save credentials for future use</label>
+        </div>
+        <p class="help-text">
+          Your credentials are stored locally in your browser and never sent
+          to any server
         </p>
+      </div>
 
-        <button class="sync-button" onclick="performSync()">
-          <span class="icon">🔄</span> Start Sync
-        </button>
+      <!-- Project Configuration Section -->
+      <div class="form-section">
+        <h2><span class="icon">📁</span> Project Configuration</h2>
 
-        <button class="copy-button" onclick="copyBibliography()">
-          <span class="icon">📋</span> Copy Bibliography Only
-        </button>
-
-        <button class="clear-cache-button" onclick="clearRepositoryCache()" style="background: linear-gradient(135deg, #ffc107 0%, #e68900 100%); margin-bottom: 10px;">
-          <span class="icon">🗑️</span> Clear Repository Cache
-        </button>
-        
-        <div class="help-text" style="text-align: center; margin-bottom: 15px;">
-          <strong>Sync:</strong> Updates your Overleaf project via Git<br>
-          <strong>Copy:</strong> Copies the bibliography to clipboard (no Overleaf account needed)<br>
-          <strong>Clear Cache:</strong> Removes cached repository data (fixes Git conflicts)
+        <!-- Saved Overleaf Projects -->
+        <div class="saved-credentials" id="savedOverleafDiv" style="display: none">
+          <div class="form-group">
+            <label>Saved Projects</label>
+            <select id="savedOverleafProjects">
+              <option value="">Select saved project...</option>
+            </select>
+          </div>
+          <button onclick="loadOverleafProject()" class="compact-button">
+            Load
+          </button>
+          <button onclick="deleteOverleafProject()" class="delete-button compact-button">
+            Delete
+          </button>
         </div>
 
-        <!-- Save Settings Section -->
-        <div class="save-settings">
-          <h3>Settings Management</h3>
-          <div class="checkbox-group">
-            <input type="checkbox" id="saveCredentials" checked />
-            <label for="saveCredentials">Save credentials for future use</label>
+        <div class="compact-row">
+          <div class="form-group">
+            <label for="projectName">Project Name (Optional)</label>
+            <input type="text" id="projectName" placeholder="My Research Project" class="compact-input" />
           </div>
-          <p class="help-text">
-            Your credentials are stored locally in your browser and never sent
-            to any server
-          </p>
-        </div>
-
-        <!-- Project Configuration Section -->
-        <div class="form-section">
-          <h2><span class="icon">📁</span> Project Configuration</h2>
-
-          <!-- Saved Overleaf Projects -->
-          <div
-            class="saved-credentials"
-            id="savedOverleafDiv"
-            style="display: none"
-          >
-            <div class="form-group">
-              <label>Saved Projects</label>
-              <select id="savedOverleafProjects">
-                <option value="">Select saved project...</option>
-              </select>
-            </div>
-            <button onclick="loadOverleafProject()" class="compact-button">
-              Load
-            </button>
-            <button
-              onclick="deleteOverleafProject()"
-              class="delete-button compact-button"
-            >
-              Delete
-            </button>
-          </div>
-
-          <div class="compact-row">
-            <div class="form-group">
-              <label for="projectName">Project Name (Optional)</label>
-              <input
-                type="text"
-                id="projectName"
-                placeholder="My Research Project"
-                class="compact-input"
-              />
-            </div>
-            <div class="form-group">
-              <label for="overleafGitUrl"
-                >Overleaf Git URL
-                <a
-                  href="https://www.overleaf.com/learn/how-to/Git_integration#How_to_authenticate_when_using_the_Git_integration"
-                  target="_blank"
-                  style="
+          <div class="form-group">
+            <label for="overleafGitUrl">Overleaf Git URL
+              <a href="https://www.overleaf.com/learn/how-to/Git_integration#How_to_authenticate_when_using_the_Git_integration"
+                target="_blank" style="
                     color: #2a5298;
                     text-decoration: none;
                     font-size: 0.85em;
-                  "
-                  >Learn more</a
-                >
-              </label>
-              <input
-                type="url"
-                id="overleafGitUrl"
-                placeholder="https://git.overleaf.com/..."
-                class="compact-input"
-              />
-            </div>
+                  ">Learn more</a>
+            </label>
+            <input type="url" id="overleafGitUrl" placeholder="https://git.overleaf.com/..." class="compact-input" />
           </div>
+        </div>
 
-          <div class="form-group">
-            <label
-              for="zoteroUrl"
-              title="Enter your Zotero library or collection URL in one of the following formats:
+        <div class="form-group">
+          <label for="zoteroUrl" title="Enter your Zotero library or collection URL in one of the following formats:
 https://www.zotero.org/$username/library
 https://www.zotero.org/$username/collections/$collectionID
 https://www.zotero.org/groups/$groupID/$groupName/library
-https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
-              >Zotero Library/Collection URL
-              <span
-                class="icon"
-                onclick="alert(this.closest('label').getAttribute('title'))"
-                style="cursor: pointer; color: #2a5298; margin-left: 4px"
-                title="Help"
-                >?</span
-              >
-              |
-              <a
-                href="https://www.zotero.org/mylibrary"
-                target="_blank"
-                style="color: #2a5298; text-decoration: none; font-size: 0.85em"
-                >Open Zotero Library</a
-              >
-            </label>
-            <input
-              type="url"
-              id="zoteroUrl"
-              placeholder="https://www.zotero.org/username/library"
-              onblur="parseZoteroUrl()"
-              class="compact-input"
-            />
-            <p class="help-text">Paste your Zotero library or collection URL</p>
-          </div>
-
-          <details>
-            <summary>Advanced Zotero Options</summary>
-            <div class="compact-row">
-              <div class="form-group">
-                <label for="zoteroUserId">User/Group ID</label>
-                <input
-                  type="text"
-                  id="zoteroUserId"
-                  placeholder="e.g., 123456"
-                  class="compact-input"
-                />
-              </div>
-              <div class="form-group">
-                <label for="zoteroCollection">Collection ID</label>
-                <input
-                  type="text"
-                  id="zoteroCollection"
-                  placeholder="e.g., ABCD1234"
-                  class="compact-input"
-                />
-              </div>
-            </div>
-            <div class="checkbox-group">
-              <input type="checkbox" id="isGroup" />
-              <label for="isGroup">This is a group library</label>
-            </div>
-          </details>
+https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID">Zotero Library/Collection URL
+            <span class="icon" onclick="alert(this.closest('label').getAttribute('title'))"
+              style="cursor: pointer; color: #2a5298; margin-left: 4px" title="Help">?</span>
+            |
+            <a href="https://www.zotero.org/mylibrary" target="_blank"
+              style="color: #2a5298; text-decoration: none; font-size: 0.85em">Open Zotero Library</a>
+          </label>
+          <input type="url" id="zoteroUrl" placeholder="https://www.zotero.org/username/library"
+            onblur="parseZoteroUrl()" class="compact-input" />
+          <p class="help-text">Paste your Zotero library or collection URL</p>
         </div>
 
-        <div class="form-section">
-          <h2><span class="icon">🔑</span> Zotero Credentials</h2>
-
-          <!-- Saved Zotero Credentials -->
-          <div
-            class="saved-credentials"
-            id="savedZoteroDiv"
-            style="display: none"
-          >
+        <details>
+          <summary>Advanced Zotero Options</summary>
+          <div class="compact-row">
             <div class="form-group">
-              <label>Saved Credentials</label>
-              <select id="savedZoteroCredentials">
-                <option value="">Select saved credentials...</option>
-              </select>
+              <label for="zoteroUserId">User/Group ID</label>
+              <input type="text" id="zoteroUserId" placeholder="e.g., 123456" class="compact-input" />
             </div>
-            <button onclick="loadZoteroCredential()" class="compact-button">
-              Load
-            </button>
-            <button
-              onclick="deleteZoteroCredential()"
-              class="delete-button compact-button"
-            >
-              Delete
-            </button>
+            <div class="form-group">
+              <label for="zoteroCollection">Collection ID</label>
+              <input type="text" id="zoteroCollection" placeholder="e.g., ABCD1234" class="compact-input" />
+            </div>
           </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="isGroup" />
+            <label for="isGroup">This is a group library</label>
+          </div>
+        </details>
+      </div>
 
-          <!-- OAuth Section -->
-          <div class="auth-section" id="oauthSection">
-            <h3 style="margin-bottom: 8px; font-size: 0.9em">
-              Generate API Key via OAuth
-            </h3>
-            <button
-              class="oauth-button compact-button"
-              onclick="startOAuth()"
-              id="oauthButton"
-            >
-              <span class="icon">🔐</span> Authorize with Zotero
-            </button>
-            <div class="oauth-instructions" id="oauthInstructions">
-              <p
-                style="
+      <div class="form-section">
+        <h2><span class="icon">🔑</span> Zotero Credentials</h2>
+
+        <!-- Saved Zotero Credentials -->
+        <div class="saved-credentials" id="savedZoteroDiv" style="display: none">
+          <div class="form-group">
+            <label>Saved Credentials</label>
+            <select id="savedZoteroCredentials">
+              <option value="">Select saved credentials...</option>
+            </select>
+          </div>
+          <button onclick="loadZoteroCredential()" class="compact-button">
+            Load
+          </button>
+          <button onclick="deleteZoteroCredential()" class="delete-button compact-button">
+            Delete
+          </button>
+        </div>
+
+        <!-- OAuth Section -->
+        <div class="auth-section" id="oauthSection">
+          <h3 style="margin-bottom: 8px; font-size: 0.9em">
+            Generate API Key via OAuth
+          </h3>
+          <button class="oauth-button compact-button" onclick="startOAuth()" id="oauthButton">
+            <span class="icon">🔐</span> Authorize with Zotero
+          </button>
+          <div class="oauth-instructions" id="oauthInstructions">
+            <p style="
                   margin-bottom: 8px;
                   color: #2a5298;
                   font-weight: 600;
                   font-size: 0.85em;
-                "
-              >
-                ✅ Zotero authorization page opened! Please create your API key
-                there and paste it below:
-              </p>
-              <button
-                onclick="cancelOAuth()"
-                class="delete-button compact-button"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-
-          <!-- Manual Configuration -->
-          <div class="form-group">
-            <label for="zoteroApiKey">API Key</label>
-            <input
-              type="password"
-              id="zoteroApiKey"
-              placeholder="Your Zotero API key"
-              oninput="updateOAuthVisibility()"
-              class="compact-input"
-            />
-            <p class="help-text">
-              Get your API key from zotero.org/settings/keys
+                ">
+              ✅ Zotero authorization page opened! Please create your API key
+              there and paste it below:
             </p>
+            <button onclick="cancelOAuth()" class="delete-button compact-button">
+              Cancel
+            </button>
           </div>
         </div>
 
-        <div class="form-section">
-          <h2><span class="icon">🔐</span> Overleaf Authentication</h2>
-
-          <!-- Saved Overleaf Tokens -->
-          <div
-            class="saved-credentials"
-            id="savedTokensDiv"
-            style="display: none"
-          >
-            <div class="form-group">
-              <label>Saved Tokens</label>
-              <select id="savedOverleafTokens">
-                <option value="">Select saved token...</option>
-              </select>
-            </div>
-            <button onclick="loadOverleafToken()" class="compact-button">
-              Load
-            </button>
-            <button
-              onclick="deleteOverleafToken()"
-              class="delete-button compact-button"
-            >
-              Delete
-            </button>
-          </div>
-
-          <div class="form-group">
-            <label for="overleafToken"
-              >Auth Token
-              <a
-                href="https://www.overleaf.com/learn/how-to/Git_integration_authentication_tokens#How_to_generate_authentication_tokens"
-                target="_blank"
-                style="color: #2a5298; text-decoration: none; font-size: 0.85em"
-                >Learn more</a
-              ></label
-            >
-            <input
-              type="password"
-              id="overleafToken"
-              placeholder="Your Overleaf auth token"
-              class="compact-input"
-            />
-            <p class="help-text">
-              Generated in Overleaf: Menu → Sync → Git → Generate token
-            </p>
-          </div>
+        <!-- Manual Configuration -->
+        <div class="form-group">
+          <label for="zoteroApiKey">API Key</label>
+          <input type="password" id="zoteroApiKey" placeholder="Your Zotero API key" oninput="updateOAuthVisibility()"
+            class="compact-input" />
+          <p class="help-text">
+            Get your API key from zotero.org/settings/keys
+          </p>
         </div>
-
-        <button class="sync-button" onclick="performSync()">
-          <span class="icon">🔄</span> Start Sync
-        </button>
       </div>
 
-      <!-- Right Panel - Output and Logs -->
-      <div class="right-panel">
-        <div class="output-header">
-          <div class="output-title">📊 Sync Output</div>
-          <button class="clear-logs" onclick="clearLogs()">Clear Logs</button>
+      <div class="form-section">
+        <h2><span class="icon">🔐</span> Overleaf Authentication</h2>
+
+        <!-- Saved Overleaf Tokens -->
+        <div class="saved-credentials" id="savedTokensDiv" style="display: none">
+          <div class="form-group">
+            <label>Saved Tokens</label>
+            <select id="savedOverleafTokens">
+              <option value="">Select saved token...</option>
+            </select>
+          </div>
+          <button onclick="loadOverleafToken()" class="compact-button">
+            Load
+          </button>
+          <button onclick="deleteOverleafToken()" class="delete-button compact-button">
+            Delete
+          </button>
         </div>
 
-        <div class="progress-container" id="progressContainer">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
+        <div class="form-group">
+          <label for="overleafToken">Auth Token
+            <a href="https://www.overleaf.com/learn/how-to/Git_integration_authentication_tokens#How_to_generate_authentication_tokens"
+              target="_blank" style="color: #2a5298; text-decoration: none; font-size: 0.85em">Learn more</a></label>
+          <input type="password" id="overleafToken" placeholder="Your Overleaf auth token" class="compact-input" />
+          <p class="help-text">
+            Generated in Overleaf: Menu → Sync → Git → Generate token
+          </p>
         </div>
+      </div>
 
-        <div class="status-container" id="statusMessages"></div>
+      <button class="sync-button" onclick="performSync()">
+        <span class="icon">🔄</span> Start Sync
+      </button>
+    </div>
 
-        <div class="logs" id="logs">
-          <div class="log-entry">
-            Ready to sync. Configure your settings on the left and click "Start
-            Sync".
-          </div>
+    <!-- Right Panel - Output and Logs -->
+    <div class="right-panel">
+      <div class="output-header">
+        <div class="output-title">📊 Sync Output</div>
+        <button class="clear-logs" onclick="clearLogs()">Clear Logs</button>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="status-container" id="statusMessages"></div>
+
+      <div class="logs" id="logs">
+        <div class="log-entry">
+          Ready to sync. Configure your settings on the left and click "Start
+          Sync".
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Import required libraries -->
-    <script src="https://unpkg.com/@isomorphic-git/lightning-fs"></script>
-    <script src="https://unpkg.com/isomorphic-git@1.25.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/oauth-1.0a@2.2.6/oauth-1.0a.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-    <script type="module">
-      import http from "https://unpkg.com/isomorphic-git@1.25.0/http/web/index.js";
-      window.http = http;
-    </script>
+  <!-- Import required libraries -->
+  <script src="https://unpkg.com/@isomorphic-git/lightning-fs"></script>
+  <script src="https://unpkg.com/isomorphic-git@1.25.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/oauth-1.0a@2.2.6/oauth-1.0a.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <script type="module">
+    import http from "https://unpkg.com/isomorphic-git@1.25.0/http/web/index.js";
+    window.http = http;
+  </script>
 
-    <script>
-      // Initialize Lightning FS
-      const fs = new LightningFS("zotero-overleaf-fs");
-      const pfs = fs.promises;
+  <script>
+    // Initialize Lightning FS
+    const fs = new LightningFS("zotero-overleaf-fs");
+    const pfs = fs.promises;
 
-      // Configuration
-      const ZOTERO_PAGE_LIMIT = 100;
-      const CORS_PROXY = "https://cors.isomorphic-git.org";
-      const STORAGE_KEY = "zotero-overleaf-sync-data";
+    // Configuration
+    const ZOTERO_PAGE_LIMIT = 100;
+    const CORS_PROXY = "https://cors.isomorphic-git.org";
+    const STORAGE_KEY = "zotero-overleaf-sync-data";
 
-      // OAuth Configuration
-      const ZOTERO_CLIENT_KEY = "YOUR_CLIENT_KEY";
-      const ZOTERO_CLIENT_SECRET = "YOUR_CLIENT_SECRET";
-      const REQUEST_TOKEN_URL = "https://www.zotero.org/oauth/request";
-      const AUTHORIZE_URL = "https://www.zotero.org/oauth/authorize";
-      const ACCESS_TOKEN_URL = "https://www.zotero.org/oauth/access";
+    // OAuth Configuration
+    const ZOTERO_CLIENT_KEY = "YOUR_CLIENT_KEY";
+    const ZOTERO_CLIENT_SECRET = "YOUR_CLIENT_SECRET";
+    const REQUEST_TOKEN_URL = "https://www.zotero.org/oauth/request";
+    const AUTHORIZE_URL = "https://www.zotero.org/oauth/authorize";
+    const ACCESS_TOKEN_URL = "https://www.zotero.org/oauth/access";
 
-      // OAuth state
-      let oauthRequestToken = null;
-      let oauthRequestSecret = null;
+    // OAuth state
+    let oauthRequestToken = null;
+    let oauthRequestSecret = null;
 
-      // Storage functions
-      function getStorageData() {
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored) {
-            return JSON.parse(stored);
-          }
-        } catch (error) {
-          console.error("Error loading from localStorage:", error);
+    // Storage functions
+    function getStorageData() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          return JSON.parse(stored);
         }
-
-        return {
-          zotero_credentials: [],
-          overleaf_projects: [],
-          overleaf_tokens: [],
-        };
+      } catch (error) {
+        console.error("Error loading from localStorage:", error);
       }
 
-      function saveToStorage(data) {
-        if (!document.getElementById("saveCredentials").checked) {
-          return;
-        }
+      return {
+        zotero_credentials: [],
+        overleaf_projects: [],
+        overleaf_tokens: [],
+      };
+    }
 
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          addLog("Settings saved to browser storage");
-        } catch (error) {
-          console.error("Error saving to localStorage:", error);
-          addLog("Error saving settings: " + error.message);
-        }
+    function saveToStorage(data) {
+      if (!document.getElementById("saveCredentials").checked) {
+        return;
       }
 
-      function loadFromStorage() {
-        const data = getStorageData();
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        addLog("Settings saved to browser storage");
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
+        addLog("Error saving settings: " + error.message);
+      }
+    }
+
+    function loadFromStorage() {
+      const data = getStorageData();
+      updateSavedCredentialsUI();
+      return data;
+    }
+
+    function saveZoteroCredential(userId, apiKey, data = null, save = true) {
+      if (!document.getElementById("saveCredentials").checked) {
+        return;
+      }
+
+      if (!data) {
+        data = getStorageData();
+      }
+      const now = new Date().toISOString();
+
+      const existingIndex = data.zotero_credentials.findIndex(
+        (cred) => cred.api_key === apiKey
+      );
+
+      if (existingIndex >= 0) {
+        data.zotero_credentials[existingIndex].last_used = now;
+      } else {
+        data.zotero_credentials.push({
+          api_key: apiKey,
+          api_secret: apiKey,
+          created: now,
+          last_used: now,
+        });
+      }
+
+      if (save) {
+        saveToStorage(data);
         updateSavedCredentialsUI();
-        return data;
+      }
+    }
+
+    function saveOverleafToken(token, data = null, save = true) {
+      if (!document.getElementById("saveCredentials").checked) {
+        return;
       }
 
-      function saveZoteroCredential(userId, apiKey, data = null, save = true) {
-        if (!document.getElementById("saveCredentials").checked) {
-          return;
-        }
+      if (!data) {
+        data = getStorageData();
+      }
+      const now = new Date().toISOString();
 
-        if (!data) {
-          data = getStorageData();
-        }
-        const now = new Date().toISOString();
+      const existingIndex = data.overleaf_tokens.findIndex(
+        (t) => t.token === token
+      );
 
-        const existingIndex = data.zotero_credentials.findIndex(
-          (cred) => cred.api_key === apiKey
-        );
-
-        if (existingIndex >= 0) {
-          data.zotero_credentials[existingIndex].last_used = now;
-        } else {
-          data.zotero_credentials.push({
-            api_key: apiKey,
-            api_secret: apiKey,
-            created: now,
-            last_used: now,
-          });
-        }
-
-        if (save) {
-          saveToStorage(data);
-          updateSavedCredentialsUI();
-        }
+      if (existingIndex >= 0) {
+        data.overleaf_tokens[existingIndex].last_used = now;
+      } else {
+        data.overleaf_tokens.push({
+          token: token,
+          created: now,
+          last_used: now,
+        });
       }
 
-      function saveOverleafToken(token, data = null, save = true) {
-        if (!document.getElementById("saveCredentials").checked) {
-          return;
-        }
+      if (save) {
+        saveToStorage(data);
+        updateSavedCredentialsUI();
+      }
+    }
 
-        if (!data) {
-          data = getStorageData();
-        }
-        const now = new Date().toISOString();
-
-        const existingIndex = data.overleaf_tokens.findIndex(
-          (t) => t.token === token
-        );
-
-        if (existingIndex >= 0) {
-          data.overleaf_tokens[existingIndex].last_used = now;
-        } else {
-          data.overleaf_tokens.push({
-            token: token,
-            created: now,
-            last_used: now,
-          });
-        }
-
-        if (save) {
-          saveToStorage(data);
-          updateSavedCredentialsUI();
-        }
+    function saveOverleafProject(
+      gitUrl,
+      token,
+      zoteroUrl,
+      projectName = "",
+      data = null,
+      save = true
+    ) {
+      if (!document.getElementById("saveCredentials").checked) {
+        return;
       }
 
-      function saveOverleafProject(
-        gitUrl,
-        token,
-        zoteroUrl,
-        projectName = "",
-        data = null,
-        save = true
-      ) {
-        if (!document.getElementById("saveCredentials").checked) {
-          return;
-        }
+      if (!data) {
+        data = getStorageData();
+      }
+      const now = new Date().toISOString();
 
-        if (!data) {
-          data = getStorageData();
-        }
-        const now = new Date().toISOString();
+      const finalProjectName =
+        projectName.trim() || gitUrl.split("/").pop() || "Unnamed Project";
 
-        const finalProjectName =
-          projectName.trim() || gitUrl.split("/").pop() || "Unnamed Project";
+      const existingIndex = data.overleaf_projects.findIndex(
+        (proj) => proj.name === finalProjectName
+      );
 
-        const existingIndex = data.overleaf_projects.findIndex(
-          (proj) => proj.name === finalProjectName
-        );
-
-        if (existingIndex >= 0) {
-          data.overleaf_projects[existingIndex].git_url = gitUrl;
-          data.overleaf_projects[existingIndex].auth_token = token;
-          data.overleaf_projects[existingIndex].zotero_url = zoteroUrl;
-          data.overleaf_projects[existingIndex].last_run = now;
-          addLog(`Updated existing project: ${finalProjectName}`);
-        } else {
-          data.overleaf_projects.push({
-            name: finalProjectName,
-            git_url: gitUrl,
-            auth_token: token,
-            local_dir: "",
-            zotero_url: zoteroUrl,
-            created: now,
-            last_run: now,
-          });
-          addLog(`Saved new project: ${finalProjectName}`);
-        }
-
-        const tokenIndex = data.overleaf_tokens.findIndex(
-          (t) => t.token === token
-        );
-        if (tokenIndex >= 0) {
-          data.overleaf_tokens[tokenIndex].last_used = now;
-        } else {
-          data.overleaf_tokens.push({
-            token: token,
-            created: now,
-            last_used: now,
-          });
-        }
-
-        if (save) {
-          saveToStorage(data);
-          updateSavedCredentialsUI();
-        }
+      if (existingIndex >= 0) {
+        data.overleaf_projects[existingIndex].git_url = gitUrl;
+        data.overleaf_projects[existingIndex].auth_token = token;
+        data.overleaf_projects[existingIndex].zotero_url = zoteroUrl;
+        data.overleaf_projects[existingIndex].last_run = now;
+        addLog(`Updated existing project: ${finalProjectName}`);
+      } else {
+        data.overleaf_projects.push({
+          name: finalProjectName,
+          git_url: gitUrl,
+          auth_token: token,
+          local_dir: "",
+          zotero_url: zoteroUrl,
+          created: now,
+          last_run: now,
+        });
+        addLog(`Saved new project: ${finalProjectName}`);
       }
 
-      function updateOAuthVisibility() {
-        const apiKey = document.getElementById("zoteroApiKey").value.trim();
-        const oauthSection = document.getElementById("oauthSection");
-
-        if (apiKey) {
-          oauthSection.style.display = "none";
-        } else {
-          oauthSection.style.display = "block";
-          resetOAuthUI();
-        }
+      const tokenIndex = data.overleaf_tokens.findIndex(
+        (t) => t.token === token
+      );
+      if (tokenIndex >= 0) {
+        data.overleaf_tokens[tokenIndex].last_used = now;
+      } else {
+        data.overleaf_tokens.push({
+          token: token,
+          created: now,
+          last_used: now,
+        });
       }
 
-      function resetOAuthUI() {
-        const oauthButton = document.getElementById("oauthButton");
-        const oauthInstructions = document.getElementById("oauthInstructions");
-
-        oauthButton.style.display = "block";
-        oauthInstructions.style.display = "none";
+      if (save) {
+        saveToStorage(data);
+        updateSavedCredentialsUI();
       }
+    }
 
-      function updateSavedCredentialsUI() {
-        const data = getStorageData();
+    function updateOAuthVisibility() {
+      const apiKey = document.getElementById("zoteroApiKey").value.trim();
+      const oauthSection = document.getElementById("oauthSection");
 
-        // Update Zotero credentials dropdown
-        const zoteroSelect = document.getElementById("savedZoteroCredentials");
-        const savedZoteroDiv = document.getElementById("savedZoteroDiv");
-
-        if (data.zotero_credentials.length > 0) {
-          savedZoteroDiv.style.display = "flex";
-          zoteroSelect.innerHTML =
-            '<option value="">Select saved credentials...</option>';
-
-          const sortedCreds = [...data.zotero_credentials].sort(
-            (a, b) => new Date(b.last_used) - new Date(a.last_used)
-          );
-
-          sortedCreds.forEach((cred, index) => {
-            const option = document.createElement("option");
-            option.value = index;
-            const tokenPreview = cred.api_key.substring(0, 8) + "...";
-            option.textContent = `${tokenPreview} (${new Date(
-              cred.last_used
-            ).toLocaleDateString()})`;
-            zoteroSelect.appendChild(option);
-          });
-        } else {
-          savedZoteroDiv.style.display = "none";
-        }
-
-        // Update Overleaf projects dropdown
-        const overleafSelect = document.getElementById("savedOverleafProjects");
-        const savedOverleafDiv = document.getElementById("savedOverleafDiv");
-
-        if (data.overleaf_projects.length > 0) {
-          savedOverleafDiv.style.display = "flex";
-          overleafSelect.innerHTML =
-            '<option value="">Select saved project...</option>';
-
-          const sortedProjects = [...data.overleaf_projects].sort(
-            (a, b) => new Date(b.last_run) - new Date(a.last_run)
-          );
-
-          sortedProjects.forEach((proj, index) => {
-            const option = document.createElement("option");
-            option.value = index;
-            option.textContent = `${proj.name} (${new Date(
-              proj.last_run
-            ).toLocaleDateString()})`;
-            overleafSelect.appendChild(option);
-          });
-        } else {
-          savedOverleafDiv.style.display = "none";
-        }
-
-        // Update Overleaf tokens dropdown
-        const tokensSelect = document.getElementById("savedOverleafTokens");
-        const savedTokensDiv = document.getElementById("savedTokensDiv");
-
-        if (data.overleaf_tokens.length > 0) {
-          savedTokensDiv.style.display = "flex";
-          tokensSelect.innerHTML =
-            '<option value="">Select saved token...</option>';
-
-          const sortedTokens = [...data.overleaf_tokens].sort(
-            (a, b) => new Date(b.last_used) - new Date(a.last_used)
-          );
-
-          sortedTokens.forEach((token, index) => {
-            const option = document.createElement("option");
-            option.value = index;
-            const tokenPreview = token.token.substring(0, 8) + "...";
-            option.textContent = `${tokenPreview} (${new Date(
-              token.last_used
-            ).toLocaleDateString()})`;
-            tokensSelect.appendChild(option);
-          });
-        } else {
-          savedTokensDiv.style.display = "none";
-        }
-
-        loadMostRecentCredentials();
+      if (apiKey) {
+        oauthSection.style.display = "none";
+      } else {
+        oauthSection.style.display = "block";
+        resetOAuthUI();
       }
+    }
 
-      function loadZoteroCredential() {
-        const data = getStorageData();
-        const select = document.getElementById("savedZoteroCredentials");
-        const index = parseInt(select.value);
+    function resetOAuthUI() {
+      const oauthButton = document.getElementById("oauthButton");
+      const oauthInstructions = document.getElementById("oauthInstructions");
 
-        if (isNaN(index)) {
-          document.getElementById("zoteroUserId").value = "";
-          document.getElementById("zoteroApiKey").value = "";
-          document.getElementById("isGroup").checked = false;
-          updateOAuthVisibility();
-          addLog("Cleared Zotero credentials");
-          return;
-        }
+      oauthButton.style.display = "block";
+      oauthInstructions.style.display = "none";
+    }
+
+    function updateSavedCredentialsUI() {
+      const data = getStorageData();
+
+      // Update Zotero credentials dropdown
+      const zoteroSelect = document.getElementById("savedZoteroCredentials");
+      const savedZoteroDiv = document.getElementById("savedZoteroDiv");
+
+      if (data.zotero_credentials.length > 0) {
+        savedZoteroDiv.style.display = "flex";
+        zoteroSelect.innerHTML =
+          '<option value="">Select saved credentials...</option>';
 
         const sortedCreds = [...data.zotero_credentials].sort(
           (a, b) => new Date(b.last_used) - new Date(a.last_used)
         );
 
-        const cred = sortedCreds[index];
-        if (cred) {
-          document.getElementById("zoteroUserId").value = cred.user_id;
-          document.getElementById("zoteroApiKey").value = cred.api_key;
-          document.getElementById("isGroup").checked = false;
-          updateOAuthVisibility();
-          addLog(
-            `Loaded Zotero credentials for ${cred.user_name || cred.user_id}`
-          );
-        }
+        sortedCreds.forEach((cred, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          const tokenPreview = cred.api_key.substring(0, 8) + "...";
+          option.textContent = `${tokenPreview} (${new Date(
+            cred.last_used
+          ).toLocaleDateString()})`;
+          zoteroSelect.appendChild(option);
+        });
+      } else {
+        savedZoteroDiv.style.display = "none";
       }
 
-      function loadOverleafToken() {
-        const data = getStorageData();
-        const select = document.getElementById("savedOverleafTokens");
-        const index = parseInt(select.value);
+      // Update Overleaf projects dropdown
+      const overleafSelect = document.getElementById("savedOverleafProjects");
+      const savedOverleafDiv = document.getElementById("savedOverleafDiv");
 
-        if (isNaN(index)) {
-          document.getElementById("overleafToken").value = "";
-          addLog("Cleared Overleaf token");
-          return;
-        }
-
-        const sortedTokens = [...data.overleaf_tokens].sort(
-          (a, b) => new Date(b.last_used) - new Date(a.last_used)
-        );
-
-        const token = sortedTokens[index];
-        if (token) {
-          document.getElementById("overleafToken").value = token.token;
-          addLog(
-            `Loaded Overleaf token: ${
-              token.name || token.token.substring(0, 8) + "..."
-            }`
-          );
-        }
-      }
-
-      function deleteOverleafToken() {
-        const data = getStorageData();
-        const select = document.getElementById("savedOverleafTokens");
-        const index = parseInt(select.value);
-
-        if (isNaN(index)) {
-          alert("Please select a token to delete");
-          return;
-        }
-
-        const sortedTokens = [...data.overleaf_tokens].sort(
-          (a, b) => new Date(b.last_used) - new Date(a.last_used)
-        );
-
-        const token = sortedTokens[index];
-        if (
-          token &&
-          confirm(
-            `Delete Overleaf token: ${
-              token.name || token.token.substring(0, 8) + "..."
-            }?`
-          )
-        ) {
-          const originalIndex = data.overleaf_tokens.findIndex(
-            (t) => t.token === token.token
-          );
-
-          if (originalIndex >= 0) {
-            data.overleaf_tokens.splice(originalIndex, 1);
-            saveToStorage(data);
-            updateSavedCredentialsUI();
-            addLog(
-              `Deleted Overleaf token: ${
-                token.name || token.token.substring(0, 8) + "..."
-              }`
-            );
-          }
-        }
-      }
-
-      function loadOverleafProject() {
-        const data = getStorageData();
-        const select = document.getElementById("savedOverleafProjects");
-        const index = parseInt(select.value);
-
-        if (isNaN(index)) {
-          document.getElementById("projectName").value = "";
-          document.getElementById("overleafGitUrl").value = "";
-          document.getElementById("overleafToken").value = "";
-          document.getElementById("zoteroUrl").value = "";
-          parseZoteroUrl();
-          addLog("Cleared Overleaf project fields");
-          return;
-        }
+      if (data.overleaf_projects.length > 0) {
+        savedOverleafDiv.style.display = "flex";
+        overleafSelect.innerHTML =
+          '<option value="">Select saved project...</option>';
 
         const sortedProjects = [...data.overleaf_projects].sort(
           (a, b) => new Date(b.last_run) - new Date(a.last_run)
         );
 
-        const proj = sortedProjects[index];
-        if (proj) {
-          document.getElementById("projectName").value = proj.name;
-          document.getElementById("overleafGitUrl").value = proj.git_url;
-          document.getElementById("overleafToken").value = proj.auth_token;
-
-          if (proj.zotero_url) {
-            document.getElementById("zoteroUrl").value = proj.zotero_url;
-            parseZoteroUrl();
-          }
-
-          addLog(`Loaded Overleaf project: ${proj.name}`);
-        }
+        sortedProjects.forEach((proj, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          option.textContent = `${proj.name} (${new Date(
+            proj.last_run
+          ).toLocaleDateString()})`;
+          overleafSelect.appendChild(option);
+        });
+      } else {
+        savedOverleafDiv.style.display = "none";
       }
 
-      function deleteZoteroCredential() {
-        const data = getStorageData();
-        const select = document.getElementById("savedZoteroCredentials");
-        const index = parseInt(select.value);
+      // Update Overleaf tokens dropdown
+      const tokensSelect = document.getElementById("savedOverleafTokens");
+      const savedTokensDiv = document.getElementById("savedTokensDiv");
 
-        if (isNaN(index)) {
-          alert("Please select a credential to delete");
-          return;
-        }
+      if (data.overleaf_tokens.length > 0) {
+        savedTokensDiv.style.display = "flex";
+        tokensSelect.innerHTML =
+          '<option value="">Select saved token...</option>';
 
-        const sortedCreds = [...data.zotero_credentials].sort(
+        const sortedTokens = [...data.overleaf_tokens].sort(
           (a, b) => new Date(b.last_used) - new Date(a.last_used)
         );
 
-        const cred = sortedCreds[index];
-        if (
-          cred &&
-          confirm(
-            `Delete Zotero credentials for ${cred.user_name || cred.user_id}?`
-          )
-        ) {
-          const originalIndex = data.zotero_credentials.findIndex(
-            (c) => c.user_id === cred.user_id && c.api_key === cred.api_key
-          );
-
-          if (originalIndex >= 0) {
-            data.zotero_credentials.splice(originalIndex, 1);
-            saveToStorage(data);
-            updateSavedCredentialsUI();
-            addLog(
-              `Deleted Zotero credentials for ${cred.user_name || cred.user_id}`
-            );
-          }
-        }
+        sortedTokens.forEach((token, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          const tokenPreview = token.token.substring(0, 8) + "...";
+          option.textContent = `${tokenPreview} (${new Date(
+            token.last_used
+          ).toLocaleDateString()})`;
+          tokensSelect.appendChild(option);
+        });
+      } else {
+        savedTokensDiv.style.display = "none";
       }
 
-      function deleteOverleafProject() {
-        const data = getStorageData();
-        const select = document.getElementById("savedOverleafProjects");
-        const index = parseInt(select.value);
+      loadMostRecentCredentials();
+    }
 
-        if (isNaN(index)) {
-          alert("Please select a project to delete");
-          return;
-        }
+    function loadZoteroCredential() {
+      const data = getStorageData();
+      const select = document.getElementById("savedZoteroCredentials");
+      const index = parseInt(select.value);
 
-        const sortedProjects = [...data.overleaf_projects].sort(
-          (a, b) => new Date(b.last_run) - new Date(a.last_run)
-        );
-
-        const proj = sortedProjects[index];
-        if (proj && confirm(`Delete Overleaf project: ${proj.name}?`)) {
-          const originalIndex = data.overleaf_projects.findIndex(
-            (p) => p.git_url === proj.git_url
-          );
-
-          if (originalIndex >= 0) {
-            data.overleaf_projects.splice(originalIndex, 1);
-            saveToStorage(data);
-            updateSavedCredentialsUI();
-            addLog(`Deleted Overleaf project: ${proj.name}`);
-          }
-        }
-      }
-
-      function loadMostRecentCredentials() {
-        const data = getStorageData();
-
-        // Load most recent Zotero credential
-        if (data.zotero_credentials.length > 0) {
-          const mostRecent = [...data.zotero_credentials].sort(
-            (a, b) => new Date(b.last_used) - new Date(a.last_used)
-          )[0];
-
-          document.getElementById("zoteroUserId").value = mostRecent.user_id;
-          document.getElementById("zoteroApiKey").value = mostRecent.api_key;
-
-          const zoteroSelect = document.getElementById(
-            "savedZoteroCredentials"
-          );
-          if (zoteroSelect.options.length > 1) {
-            zoteroSelect.selectedIndex = 1;
-          }
-
-          addLog(
-            `Auto-loaded most recent Zotero credentials for ${
-              mostRecent.user_name || mostRecent.user_id
-            }`
-          );
-        }
-
-        // Load most recent Overleaf project
-        if (data.overleaf_projects.length > 0) {
-          const mostRecent = [...data.overleaf_projects].sort(
-            (a, b) => new Date(b.last_run) - new Date(a.last_run)
-          )[0];
-
-          document.getElementById("projectName").value = mostRecent.name;
-          document.getElementById("overleafGitUrl").value = mostRecent.git_url;
-
-          const projectSelect = document.getElementById(
-            "savedOverleafProjects"
-          );
-          if (projectSelect.options.length > 1) {
-            projectSelect.selectedIndex = 1;
-          }
-
-          if (mostRecent.zotero_url) {
-            document.getElementById("zoteroUrl").value = mostRecent.zotero_url;
-            parseZoteroUrl();
-          }
-
-          addLog(
-            `Auto-loaded most recent Overleaf project: ${mostRecent.name}`
-          );
-        }
-
-        // Load most recent Overleaf token
-        if (data.overleaf_tokens.length > 0) {
-          const mostRecent = [...data.overleaf_tokens].sort(
-            (a, b) => new Date(b.last_used) - new Date(a.last_used)
-          )[0];
-
-          document.getElementById("overleafToken").value = mostRecent.token;
-
-          const tokenSelect = document.getElementById("savedOverleafTokens");
-          if (tokenSelect.options.length > 1) {
-            tokenSelect.selectedIndex = 1;
-          }
-
-          addLog(
-            `Auto-loaded most recent Overleaf token: ${
-              mostRecent.name || mostRecent.token.substring(0, 8) + "..."
-            }`
-          );
-        }
-
+      if (isNaN(index)) {
+        document.getElementById("zoteroUserId").value = "";
+        document.getElementById("zoteroApiKey").value = "";
+        document.getElementById("isGroup").checked = false;
         updateOAuthVisibility();
+        addLog("Cleared Zotero credentials");
+        return;
       }
 
-      // OAuth functions
-      function startOAuth() {
-        const oauthButton = document.getElementById("oauthButton");
-        const oauthInstructions = document.getElementById("oauthInstructions");
+      const sortedCreds = [...data.zotero_credentials].sort(
+        (a, b) => new Date(b.last_used) - new Date(a.last_used)
+      );
 
-        addLog("Starting OAuth process...");
+      const cred = sortedCreds[index];
+      if (cred) {
+        document.getElementById("zoteroUserId").value = cred.user_id;
+        document.getElementById("zoteroApiKey").value = cred.api_key;
+        document.getElementById("isGroup").checked = false;
+        updateOAuthVisibility();
+        addLog(
+          `Loaded Zotero credentials for ${cred.user_name || cred.user_id}`
+        );
+      }
+    }
 
-        oauthButton.style.display = "none";
-        oauthInstructions.style.display = "block";
+    function loadOverleafToken() {
+      const data = getStorageData();
+      const select = document.getElementById("savedOverleafTokens");
+      const index = parseInt(select.value);
 
-        const permissions = [
-          "library_access=1",
-          "notes_access=1",
-          "write_access=0",
-          "all_groups=read",
-          "name=Zotero Overleaf Sync",
-        ].join("&");
+      if (isNaN(index)) {
+        document.getElementById("overleafToken").value = "";
+        addLog("Cleared Overleaf token");
+        return;
+      }
 
-        const authUrl = `https://www.zotero.org/settings/keys/new?${permissions}`;
+      const sortedTokens = [...data.overleaf_tokens].sort(
+        (a, b) => new Date(b.last_used) - new Date(a.last_used)
+      );
 
-        window.open(authUrl, "_blank");
+      const token = sortedTokens[index];
+      if (token) {
+        document.getElementById("overleafToken").value = token.token;
+        addLog(
+          `Loaded Overleaf token: ${token.name || token.token.substring(0, 8) + "..."
+          }`
+        );
+      }
+    }
+
+    function deleteOverleafToken() {
+      const data = getStorageData();
+      const select = document.getElementById("savedOverleafTokens");
+      const index = parseInt(select.value);
+
+      if (isNaN(index)) {
+        alert("Please select a token to delete");
+        return;
+      }
+
+      const sortedTokens = [...data.overleaf_tokens].sort(
+        (a, b) => new Date(b.last_used) - new Date(a.last_used)
+      );
+
+      const token = sortedTokens[index];
+      if (
+        token &&
+        confirm(
+          `Delete Overleaf token: ${token.name || token.token.substring(0, 8) + "..."
+          }?`
+        )
+      ) {
+        const originalIndex = data.overleaf_tokens.findIndex(
+          (t) => t.token === token.token
+        );
+
+        if (originalIndex >= 0) {
+          data.overleaf_tokens.splice(originalIndex, 1);
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+          addLog(
+            `Deleted Overleaf token: ${token.name || token.token.substring(0, 8) + "..."
+            }`
+          );
+        }
+      }
+    }
+
+    function loadOverleafProject() {
+      const data = getStorageData();
+      const select = document.getElementById("savedOverleafProjects");
+      const index = parseInt(select.value);
+
+      if (isNaN(index)) {
+        document.getElementById("projectName").value = "";
+        document.getElementById("overleafGitUrl").value = "";
+        document.getElementById("overleafToken").value = "";
+        document.getElementById("zoteroUrl").value = "";
+        parseZoteroUrl();
+        addLog("Cleared Overleaf project fields");
+        return;
+      }
+
+      const sortedProjects = [...data.overleaf_projects].sort(
+        (a, b) => new Date(b.last_run) - new Date(a.last_run)
+      );
+
+      const proj = sortedProjects[index];
+      if (proj) {
+        document.getElementById("projectName").value = proj.name;
+        document.getElementById("overleafGitUrl").value = proj.git_url;
+        document.getElementById("overleafToken").value = proj.auth_token;
+
+        if (proj.zotero_url) {
+          document.getElementById("zoteroUrl").value = proj.zotero_url;
+          parseZoteroUrl();
+        }
+
+        addLog(`Loaded Overleaf project: ${proj.name}`);
+      }
+    }
+
+    function deleteZoteroCredential() {
+      const data = getStorageData();
+      const select = document.getElementById("savedZoteroCredentials");
+      const index = parseInt(select.value);
+
+      if (isNaN(index)) {
+        alert("Please select a credential to delete");
+        return;
+      }
+
+      const sortedCreds = [...data.zotero_credentials].sort(
+        (a, b) => new Date(b.last_used) - new Date(a.last_used)
+      );
+
+      const cred = sortedCreds[index];
+      if (
+        cred &&
+        confirm(
+          `Delete Zotero credentials for ${cred.user_name || cred.user_id}?`
+        )
+      ) {
+        const originalIndex = data.zotero_credentials.findIndex(
+          (c) => c.user_id === cred.user_id && c.api_key === cred.api_key
+        );
+
+        if (originalIndex >= 0) {
+          data.zotero_credentials.splice(originalIndex, 1);
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+          addLog(
+            `Deleted Zotero credentials for ${cred.user_name || cred.user_id}`
+          );
+        }
+      }
+    }
+
+    function deleteOverleafProject() {
+      const data = getStorageData();
+      const select = document.getElementById("savedOverleafProjects");
+      const index = parseInt(select.value);
+
+      if (isNaN(index)) {
+        alert("Please select a project to delete");
+        return;
+      }
+
+      const sortedProjects = [...data.overleaf_projects].sort(
+        (a, b) => new Date(b.last_run) - new Date(a.last_run)
+      );
+
+      const proj = sortedProjects[index];
+      if (proj && confirm(`Delete Overleaf project: ${proj.name}?`)) {
+        const originalIndex = data.overleaf_projects.findIndex(
+          (p) => p.git_url === proj.git_url
+        );
+
+        if (originalIndex >= 0) {
+          data.overleaf_projects.splice(originalIndex, 1);
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+          addLog(`Deleted Overleaf project: ${proj.name}`);
+        }
+      }
+    }
+
+    function loadMostRecentCredentials() {
+      const data = getStorageData();
+
+      // Load most recent Zotero credential
+      if (data.zotero_credentials.length > 0) {
+        const mostRecent = [...data.zotero_credentials].sort(
+          (a, b) => new Date(b.last_used) - new Date(a.last_used)
+        )[0];
+
+        document.getElementById("zoteroUserId").value = mostRecent.user_id;
+        document.getElementById("zoteroApiKey").value = mostRecent.api_key;
+
+        const zoteroSelect = document.getElementById(
+          "savedZoteroCredentials"
+        );
+        if (zoteroSelect.options.length > 1) {
+          zoteroSelect.selectedIndex = 1;
+        }
 
         addLog(
-          "Opened Zotero key generation page. Please create a key and paste it in the API Key field below."
+          `Auto-loaded most recent Zotero credentials for ${mostRecent.user_name || mostRecent.user_id
+          }`
         );
-        addStatus(
-          "Please create an API key in the opened tab and paste it in the API Key field",
-          "info"
-        );
-
-        document.getElementById("zoteroApiKey").focus();
       }
 
-      function cancelOAuth() {
-        resetOAuthUI();
-        addLog("OAuth process cancelled");
-      }
+      // Load most recent Overleaf project
+      if (data.overleaf_projects.length > 0) {
+        const mostRecent = [...data.overleaf_projects].sort(
+          (a, b) => new Date(b.last_run) - new Date(a.last_run)
+        )[0];
 
-      async function completeOAuth() {
-        const verifier = document.getElementById("verifierCode").value.trim();
+        document.getElementById("projectName").value = mostRecent.name;
+        document.getElementById("overleafGitUrl").value = mostRecent.git_url;
 
-        if (!verifier) {
-          alert("Please enter the verification code");
-          return;
+        const projectSelect = document.getElementById(
+          "savedOverleafProjects"
+        );
+        if (projectSelect.options.length > 1) {
+          projectSelect.selectedIndex = 1;
         }
 
-        addLog("OAuth completion would happen here with verifier: " + verifier);
+        if (mostRecent.zotero_url) {
+          document.getElementById("zoteroUrl").value = mostRecent.zotero_url;
+          parseZoteroUrl();
+        }
+
+        addLog(
+          `Auto-loaded most recent Overleaf project: ${mostRecent.name}`
+        );
       }
 
-      // Parse Zotero URL to extract user/group ID and collection
-      function parseZoteroUrl() {
-        const urlInput = document.getElementById("zoteroUrl").value.trim();
-        if (!urlInput) return;
+      // Load most recent Overleaf token
+      if (data.overleaf_tokens.length > 0) {
+        const mostRecent = [...data.overleaf_tokens].sort(
+          (a, b) => new Date(b.last_used) - new Date(a.last_used)
+        )[0];
 
-        try {
-          const url = new URL(urlInput);
-          const pathParts = url.pathname.split("/").filter((p) => p);
+        document.getElementById("overleafToken").value = mostRecent.token;
 
-          let userId = "";
-          let collectionId = "";
-          let isGroup = false;
+        const tokenSelect = document.getElementById("savedOverleafTokens");
+        if (tokenSelect.options.length > 1) {
+          tokenSelect.selectedIndex = 1;
+        }
 
-          if (pathParts[0] === "groups") {
-            isGroup = true;
-            userId = pathParts[1];
+        addLog(
+          `Auto-loaded most recent Overleaf token: ${mostRecent.name || mostRecent.token.substring(0, 8) + "..."
+          }`
+        );
+      }
 
-            for (let i = 2; i < pathParts.length; i++) {
-              if (pathParts[i] === "collections" && i + 1 < pathParts.length) {
-                collectionId = pathParts[i + 1];
-                break;
-              }
+      updateOAuthVisibility();
+    }
+
+    // OAuth functions
+    function startOAuth() {
+      const oauthButton = document.getElementById("oauthButton");
+      const oauthInstructions = document.getElementById("oauthInstructions");
+
+      addLog("Starting OAuth process...");
+
+      oauthButton.style.display = "none";
+      oauthInstructions.style.display = "block";
+
+      const permissions = [
+        "library_access=1",
+        "notes_access=1",
+        "write_access=0",
+        "all_groups=read",
+        "name=Zotero Overleaf Sync",
+      ].join("&");
+
+      const authUrl = `https://www.zotero.org/settings/keys/new?${permissions}`;
+
+      window.open(authUrl, "_blank");
+
+      addLog(
+        "Opened Zotero key generation page. Please create a key and paste it in the API Key field below."
+      );
+      addStatus(
+        "Please create an API key in the opened tab and paste it in the API Key field",
+        "info"
+      );
+
+      document.getElementById("zoteroApiKey").focus();
+    }
+
+    function cancelOAuth() {
+      resetOAuthUI();
+      addLog("OAuth process cancelled");
+    }
+
+    async function completeOAuth() {
+      const verifier = document.getElementById("verifierCode").value.trim();
+
+      if (!verifier) {
+        alert("Please enter the verification code");
+        return;
+      }
+
+      addLog("OAuth completion would happen here with verifier: " + verifier);
+    }
+
+    // Parse Zotero URL to extract user/group ID and collection
+    function parseZoteroUrl() {
+      const urlInput = document.getElementById("zoteroUrl").value.trim();
+      if (!urlInput) return;
+
+      try {
+        const url = new URL(urlInput);
+        const pathParts = url.pathname.split("/").filter((p) => p);
+
+        let userId = "";
+        let collectionId = "";
+        let isGroup = false;
+
+        if (pathParts[0] === "groups") {
+          isGroup = true;
+          userId = pathParts[1];
+
+          for (let i = 2; i < pathParts.length; i++) {
+            if (pathParts[i] === "collections" && i + 1 < pathParts.length) {
+              collectionId = pathParts[i + 1];
+              break;
             }
-          } else {
-            isGroup = false;
-            userId = pathParts[0];
+          }
+        } else {
+          isGroup = false;
+          userId = pathParts[0];
 
-            if (pathParts.length >= 3 && pathParts[1] === "collections") {
-              collectionId = pathParts[2];
+          if (pathParts.length >= 3 && pathParts[1] === "collections") {
+            collectionId = pathParts[2];
+          }
+        }
+
+        document.getElementById("zoteroUserId").value = userId;
+        document.getElementById("zoteroCollection").value = collectionId;
+        document.getElementById("isGroup").checked = isGroup;
+
+        addLog(
+          `Parsed Zotero URL: ${isGroup ? "Group" : "User"
+          } ID: ${userId}, Collection: ${collectionId || "All"}`
+        );
+      } catch (error) {
+        addLog(`Invalid Zotero URL: ${error.message}`);
+      }
+    }
+
+    // UI Helper functions
+    function setProgress(percent) {
+      document.getElementById("progressFill").style.width = percent + "%";
+    }
+
+    function addStatus(message, type = "info") {
+      const statusDiv = document.getElementById("statusMessages");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `status-message status-${type}`;
+
+      let icon = "📌";
+      if (type === "success") icon = "✅";
+      if (type === "error") icon = "❌";
+      if (type === "warning") icon = "⚠️";
+
+      messageDiv.innerHTML = `<span class="icon">${icon}</span> ${message}`;
+      statusDiv.appendChild(messageDiv);
+      statusDiv.scrollTop = statusDiv.scrollHeight;
+    }
+
+    function addLog(message) {
+      const logsDiv = document.getElementById("logs");
+      const logEntry = document.createElement("div");
+      logEntry.className = "log-entry";
+      logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logsDiv.appendChild(logEntry);
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById("logs").innerHTML =
+        '<div class="log-entry">Logs cleared. Ready for new sync operation.</div>';
+      document.getElementById("statusMessages").innerHTML = "";
+      setProgress(0);
+      document.getElementById("progressContainer").style.display = "none";
+    }
+
+    function showProgress() {
+      document.getElementById("progressContainer").style.display = "block";
+      document.getElementById("statusMessages").innerHTML = "";
+      setProgress(0);
+    }
+
+    // Zotero API functions
+    async function getAllSubcollections(userId, apiKey, parentId, isGroup) {
+      const base = isGroup ? "groups" : "users";
+      const url = `https://api.zotero.org/${base}/${userId}/collections/${parentId}/collections`;
+      const params = new URLSearchParams({
+        key: apiKey,
+        limit: ZOTERO_PAGE_LIMIT,
+      });
+
+      let subIds = [];
+      let nextUrl = url + "?" + params.toString();
+
+      while (nextUrl) {
+        try {
+          if (!nextUrl.includes("key=")) {
+            nextUrl += `&key=${apiKey}`;
+          }
+          const response = await fetch(nextUrl);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          for (const collection of data) {
+            subIds.push(collection.key || collection.data.key);
+          }
+
+          const linkHeader = response.headers.get("Link");
+          nextUrl = null;
+
+          if (linkHeader) {
+            const links = linkHeader.split(",");
+            for (const link of links) {
+              if (link.includes('rel="next"')) {
+                const match = link.match(/<(.+?)>/);
+                if (match) {
+                  nextUrl = match[1];
+                }
+              }
             }
           }
 
-          document.getElementById("zoteroUserId").value = userId;
-          document.getElementById("zoteroCollection").value = collectionId;
-          document.getElementById("isGroup").checked = isGroup;
-
-          addLog(
-            `Parsed Zotero URL: ${
-              isGroup ? "Group" : "User"
-            } ID: ${userId}, Collection: ${collectionId || "All"}`
-          );
+          await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
-          addLog(`Invalid Zotero URL: ${error.message}`);
+          addLog(`Error fetching subcollections: ${error.message}`);
+          throw error;
         }
       }
 
-      // UI Helper functions
-      function setProgress(percent) {
-        document.getElementById("progressFill").style.width = percent + "%";
+      let allDescendants = [];
+      for (const collId of subIds) {
+        allDescendants.push(collId);
+        const subSubIds = await getAllSubcollections(
+          userId,
+          apiKey,
+          collId,
+          isGroup
+        );
+        allDescendants = allDescendants.concat(subSubIds);
       }
 
-      function addStatus(message, type = "info") {
-        const statusDiv = document.getElementById("statusMessages");
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `status-message status-${type}`;
+      return allDescendants;
+    }
 
-        let icon = "📌";
-        if (type === "success") icon = "✅";
-        if (type === "error") icon = "❌";
-        if (type === "warning") icon = "⚠️";
+    async function fetchZoteroBib(userId, apiKey, collectionId, isGroup) {
+      const base = isGroup ? "groups" : "users";
+      let collectionIds = [];
 
-        messageDiv.innerHTML = `<span class="icon">${icon}</span> ${message}`;
-        statusDiv.appendChild(messageDiv);
-        statusDiv.scrollTop = statusDiv.scrollHeight;
+      if (collectionId) {
+        collectionIds = [collectionId];
+        addLog(`Fetching subcollections for ${collectionId}...`);
+        const subcollections = await getAllSubcollections(
+          userId,
+          apiKey,
+          collectionId,
+          isGroup
+        );
+        collectionIds = collectionIds.concat(subcollections);
+        addLog(`Found ${subcollections.length} subcollections`);
+      } else {
+        collectionIds = [null];
       }
 
-      function addLog(message) {
-        const logsDiv = document.getElementById("logs");
-        const logEntry = document.createElement("div");
-        logEntry.className = "log-entry";
-        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        logsDiv.appendChild(logEntry);
-        logsDiv.scrollTop = logsDiv.scrollHeight;
-      }
+      let allBibtex = "";
+      let totalEntries = 0;
+      let pageCount = 0;
 
-      function clearLogs() {
-        document.getElementById("logs").innerHTML =
-          '<div class="log-entry">Logs cleared. Ready for new sync operation.</div>';
-        document.getElementById("statusMessages").innerHTML = "";
-        setProgress(0);
-        document.getElementById("progressContainer").style.display = "none";
-      }
+      addLog(`Fetching from Zotero: ${base}/${userId}`);
+      if (collectionId)
+        addLog(`Collections to fetch: ${collectionIds.length}`);
 
-      function showProgress() {
-        document.getElementById("progressContainer").style.display = "block";
-        document.getElementById("statusMessages").innerHTML = "";
-        setProgress(0);
-      }
+      for (const collId of collectionIds) {
+        let url;
+        if (collId) {
+          url = `https://api.zotero.org/${base}/${userId}/collections/${collId}/items/top`;
+        } else {
+          url = `https://api.zotero.org/${base}/${userId}/items/top`;
+        }
 
-      // Zotero API functions
-      async function getAllSubcollections(userId, apiKey, parentId, isGroup) {
-        const base = isGroup ? "groups" : "users";
-        const url = `https://api.zotero.org/${base}/${userId}/collections/${parentId}/collections`;
         const params = new URLSearchParams({
+          format: "bibtex",
           key: apiKey,
           limit: ZOTERO_PAGE_LIMIT,
         });
 
-        let subIds = [];
         let nextUrl = url + "?" + params.toString();
 
         while (nextUrl) {
           try {
+            const urlToDisplay = nextUrl.replace(/&key=[^&]*/, "&key=***");
+            addLog(
+              `Fetching ${collId ? "collection " + collId : "library"
+              }: ${urlToDisplay}`
+            );
+
             if (!nextUrl.includes("key=")) {
               nextUrl += `&key=${apiKey}`;
             }
+
             const response = await fetch(nextUrl);
+
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-
-            for (const collection of data) {
-              subIds.push(collection.key || collection.data.key);
+            const text = await response.text();
+            if (text) {
+              allBibtex += text.trim() + "\n\n";
+              const entries = (text.match(/@\w+{/g) || []).length;
+              totalEntries += entries;
+              addLog(
+                `Retrieved ${entries} entries from ${collId || "library"}`
+              );
             }
 
             const linkHeader = response.headers.get("Link");
@@ -1527,408 +1544,98 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               }
             }
 
+            pageCount++;
             await new Promise((resolve) => setTimeout(resolve, 100));
           } catch (error) {
-            addLog(`Error fetching subcollections: ${error.message}`);
+            addLog(`Error fetching: ${error.message}`);
             throw error;
           }
         }
-
-        let allDescendants = [];
-        for (const collId of subIds) {
-          allDescendants.push(collId);
-          const subSubIds = await getAllSubcollections(
-            userId,
-            apiKey,
-            collId,
-            isGroup
-          );
-          allDescendants = allDescendants.concat(subSubIds);
-        }
-
-        return allDescendants;
       }
 
-      async function fetchZoteroBib(userId, apiKey, collectionId, isGroup) {
-        const base = isGroup ? "groups" : "users";
-        let collectionIds = [];
-
-        if (collectionId) {
-          collectionIds = [collectionId];
-          addLog(`Fetching subcollections for ${collectionId}...`);
-          const subcollections = await getAllSubcollections(
-            userId,
-            apiKey,
-            collectionId,
-            isGroup
-          );
-          collectionIds = collectionIds.concat(subcollections);
-          addLog(`Found ${subcollections.length} subcollections`);
-        } else {
-          collectionIds = [null];
-        }
-
-        let allBibtex = "";
-        let totalEntries = 0;
-        let pageCount = 0;
-
-        addLog(`Fetching from Zotero: ${base}/${userId}`);
-        if (collectionId)
-          addLog(`Collections to fetch: ${collectionIds.length}`);
-
-        for (const collId of collectionIds) {
-          let url;
-          if (collId) {
-            url = `https://api.zotero.org/${base}/${userId}/collections/${collId}/items/top`;
-          } else {
-            url = `https://api.zotero.org/${base}/${userId}/items/top`;
-          }
-
-          const params = new URLSearchParams({
-            format: "bibtex",
-            key: apiKey,
-            limit: ZOTERO_PAGE_LIMIT,
-          });
-
-          let nextUrl = url + "?" + params.toString();
-
-          while (nextUrl) {
-            try {
-              const urlToDisplay = nextUrl.replace(/&key=[^&]*/, "&key=***");
-              addLog(
-                `Fetching ${
-                  collId ? "collection " + collId : "library"
-                }: ${urlToDisplay}`
-              );
-
-              if (!nextUrl.includes("key=")) {
-                nextUrl += `&key=${apiKey}`;
-              }
-
-              const response = await fetch(nextUrl);
-
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-
-              const text = await response.text();
-              if (text) {
-                allBibtex += text.trim() + "\n\n";
-                const entries = (text.match(/@\w+{/g) || []).length;
-                totalEntries += entries;
-                addLog(
-                  `Retrieved ${entries} entries from ${collId || "library"}`
-                );
-              }
-
-              const linkHeader = response.headers.get("Link");
-              nextUrl = null;
-
-              if (linkHeader) {
-                const links = linkHeader.split(",");
-                for (const link of links) {
-                  if (link.includes('rel="next"')) {
-                    const match = link.match(/<(.+?)>/);
-                    if (match) {
-                      nextUrl = match[1];
-                    }
-                  }
-                }
-              }
-
-              pageCount++;
-              await new Promise((resolve) => setTimeout(resolve, 100));
-            } catch (error) {
-              addLog(`Error fetching: ${error.message}`);
-              throw error;
-            }
-          }
-        }
-
-        const zoteroPath = `${base}/${userId}${
-          collectionId ? "/collections/" + collectionId : ""
+      const zoteroPath = `${base}/${userId}${collectionId ? "/collections/" + collectionId : ""
         }`;
-        const header =
-          `% Generated by Zotero Overleaf Sync (Browser Version)\n` +
-          `% Updated on ${new Date().toISOString()}\n` +
-          `% Zotero path: ${zoteroPath}\n` +
-          `% Collections fetched: ${collectionIds.length}\n` +
-          `% Total entries: ${totalEntries}\n\n`;
+      const header =
+        `% Generated by Zotero Overleaf Sync (Browser Version)\n` +
+        `% Updated on ${new Date().toISOString()}\n` +
+        `% Zotero path: ${zoteroPath}\n` +
+        `% Collections fetched: ${collectionIds.length}\n` +
+        `% Total entries: ${totalEntries}\n\n`;
 
-        addLog(
-          `Successfully fetched ${totalEntries} entries in ${pageCount} pages from ${collectionIds.length} collections`
-        );
-        return header + allBibtex;
-      }
+      addLog(
+        `Successfully fetched ${totalEntries} entries in ${pageCount} pages from ${collectionIds.length} collections`
+      );
+      return header + allBibtex;
+    }
 
-      // Git operations
-      async function removeDirectory(dirPath) {
-        try {
-          const files = await pfs.readdir(dirPath);
-          
-          for (const file of files) {
-            const filePath = `${dirPath}/${file}`;
-            try {
-              const stat = await pfs.stat(filePath);
-              if (stat.isDirectory()) {
-                await removeDirectory(filePath); // Recursive call
-              } else {
-                await pfs.unlink(filePath); // Remove file
-              }
-            } catch (error) {
-              // Continue with other files even if one fails
-              addLog(`Warning: Could not remove ${filePath}: ${error.message}`);
-            }
-          }
-          
-          // Remove the now-empty directory
-          await pfs.rmdir(dirPath);
-        } catch (error) {
-          if (error.code !== 'ENOENT') {
-            throw error;
-          }
-          // Directory doesn't exist, which is fine
-        }
-      }
+    // Git operations
+    async function removeDirectory(dirPath) {
+      try {
+        const files = await pfs.readdir(dirPath);
 
-      async function cloneOrUpdateRepo(gitUrl, token, repoPath) {
-        const parsed = new URL(gitUrl);
-        const authUrl = `${parsed.protocol}//git:${token}@${parsed.host}${parsed.pathname}`;
-
-        try {
-          const gitDir = `${repoPath}/.git`;
+        for (const file of files) {
+          const filePath = `${dirPath}/${file}`;
           try {
-            await pfs.stat(gitDir);
-            addLog("Repository exists, checking if it's complete...");
-
-            // Check if repository has any branches (indicates it's properly cloned)
-            let hasValidBranches = false;
-            let branches = [];
-            try {
-              branches = await git.listBranches({ fs, dir: repoPath });
-              hasValidBranches = branches && branches.length > 0;
-              if (hasValidBranches) {
-                addLog(`Found ${branches.length} branch(es): ${branches.join(', ')}`);
-              }
-            } catch (branchError) {
-              addLog(`Could not list branches: ${branchError.message}`);
-              hasValidBranches = false;
-            }
-
-            if (!hasValidBranches) {
-              // Repository exists but has no branches - likely corrupted/incomplete
-              addLog("Repository appears incomplete (no branches found). Re-cloning...");
-              
-              // Remove the corrupted repository with force
-              try {
-                await removeDirectory(repoPath);
-                addLog("Removed incomplete repository");
-              } catch (removeError) {
-                addLog(`Warning: Could not remove incomplete repository: ${removeError.message}`);
-              }
-
-              // Re-clone fresh with progress logging
-              addLog(`Starting clone from: ${parsed.host}${parsed.pathname}`);
-              await git.clone({
-                fs,
-                http: window.http,
-                dir: repoPath,
-                url: authUrl,
-                singleBranch: true,
-                corsProxy: CORS_PROXY,
-                onProgress: (progress) => {
-                  if (progress.phase) {
-                    addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
-                  }
-                },
-                onMessage: (message) => {
-                  addLog(`Git: ${message}`);
-                },
-              });
-              
-              addLog("Repository re-cloned successfully");
+            const stat = await pfs.stat(filePath);
+            if (stat.isDirectory()) {
+              await removeDirectory(filePath); // Recursive call
             } else {
-              // Repository is valid, but we need to handle conflicts properly
-              addLog("Repository is complete, resolving any conflicts and updating...");
-
-              try {
-                // First, check the working directory status
-                const status = await git.statusMatrix({
-                  fs,
-                  dir: repoPath,
-                });
-
-                const conflicts = status.filter(([filepath, head, workdir, stage]) => 
-                  head !== workdir || head !== stage || workdir !== stage
-                );
-
-                if (conflicts.length > 0) {
-                  addLog(`Found ${conflicts.length} local changes/conflicts:`);
-                  conflicts.forEach(([filepath]) => {
-                    addLog(`  - ${filepath}`);
-                  });
-                  
-                  addStatus(`Resolving ${conflicts.length} local conflicts...`, "warning");
-
-                  // Reset the working directory by removing conflicting files
-                  for (const [filepath] of conflicts) {
-                    try {
-                      const fullPath = `${repoPath}/${filepath}`;
-                      await pfs.unlink(fullPath);
-                      addLog(`Removed conflicting file: ${filepath}`);
-                    } catch (removeError) {
-                      // File might not exist or be a directory
-                      try {
-                        await removeDirectory(`${repoPath}/${filepath}`);
-                        addLog(`Removed conflicting directory: ${filepath}`);
-                      } catch (dirError) {
-                        addLog(`Could not remove ${filepath}: ${removeError.message}`);
-                      }
-                    }
-                  }
-
-                  // Reset the index
-                  try {
-                    for (const [filepath] of conflicts) {
-                      try {
-                        await git.resetIndex({
-                          fs,
-                          dir: repoPath,
-                          filepath: filepath,
-                        });
-                      } catch (resetError) {
-                        addLog(`Could not reset index for ${filepath}: ${resetError.message}`);
-                      }
-                    }
-                  } catch (resetError) {
-                    addLog(`Index reset failed: ${resetError.message}`);
-                  }
-                  
-                  addStatus("Local conflicts resolved", "success");
-                }
-
-                // Get the current branch
-                const currentBranch = branches[0];
-                addLog(`Working with branch: ${currentBranch}`);
-
-                // Now fetch the latest changes with adaptive depth
-                addLog("Fetching latest changes...");
-                let fetchDepth = 1;
-                let maxDepth = 1000; // Safety limit
-                let remoteCommit = null;
-                
-                while (fetchDepth <= maxDepth) {
-                  try {
-                    await git.fetch({
-                      fs,
-                      http: window.http,
-                      dir: repoPath,
-                      url: authUrl,
-                      depth: fetchDepth,
-                      corsProxy: CORS_PROXY,
-                      onProgress: (progress) => {
-                        if (progress.phase) {
-                          addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
-                        }
-                      },
-                    });
-                    
-                    // Try to resolve the remote commit
-                    try {
-                      remoteCommit = await git.resolveRef({
-                        fs,
-                        dir: repoPath,
-                        ref: `origin/${currentBranch}`,
-                      });
-                      addLog(`Remote commit resolved: ${remoteCommit.substring(0, 8)} with depth ${fetchDepth}`);
-                      break; // Success, we have the remote commit
-                    } catch (resolveError) {
-                      addLog(`Remote commit not yet resolved with depth ${fetchDepth}, trying deeper...`);
-                    }
-                  } catch (fetchError) {
-                    addLog(`Fetch failed with depth ${fetchDepth}: ${fetchError.message}`);
-                  }
-                  
-                  fetchDepth = Math.min(fetchDepth * 2, maxDepth);
-                  if (fetchDepth >= maxDepth) {
-                    addLog(`Reached maximum depth ${maxDepth}, using full fetch...`);
-                    await git.fetch({
-                      fs,
-                      http: window.http,
-                      dir: repoPath,
-                      url: authUrl,
-                      corsProxy: CORS_PROXY,
-                      onProgress: (progress) => {
-                        if (progress.phase) {
-                          addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
-                        }
-                      },
-                    });
-                    remoteCommit = await git.resolveRef({
-                      fs,
-                      dir: repoPath,
-                      ref: `origin/${currentBranch}`,
-                    });
-                    break;
-                  }
-                }
-
-                // Force reset to the remote commit
-                await git.checkout({
-                  fs,
-                  dir: repoPath,
-                  ref: remoteCommit,
-                  force: true,
-                });
-
-                // Attach to the branch
-                await git.checkout({
-                  fs,
-                  dir: repoPath,
-                  ref: currentBranch,
-                  force: true,
-                });
-
-                addLog("Repository updated successfully (forced to remote state)");
-
-              } catch (updateError) {
-                addLog(`Update failed: ${updateError.message}`);
-                addLog("Attempting complete repository refresh...");
-                
-                // If all conflict resolution fails, remove and re-clone
-                try {
-                  await removeDirectory(repoPath);
-                  addLog("Removed problematic repository");
-                  
-                  // Re-clone fresh
-                  addLog(`Re-cloning from: ${parsed.host}${parsed.pathname}`);
-                  await git.clone({
-                    fs,
-                    http: window.http,
-                    dir: repoPath,
-                    url: authUrl,
-                    singleBranch: true,
-                    corsProxy: CORS_PROXY,
-                    onProgress: (progress) => {
-                      if (progress.phase) {
-                        addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
-                      }
-                    },
-                    onMessage: (message) => {
-                      addLog(`Git: ${message}`);
-                    },
-                  });
-                  
-                  addLog("Repository re-cloned successfully after conflict");
-                } catch (cloneError) {
-                  addLog(`Re-clone failed: ${cloneError.message}`);
-                  throw cloneError;
-                }
-              }
+              await pfs.unlink(filePath); // Remove file
             }
-          } catch (e) {
-            addLog(`Cloning repository from: ${parsed.host}${parsed.pathname}`);
+          } catch (error) {
+            // Continue with other files even if one fails
+            addLog(`Warning: Could not remove ${filePath}: ${error.message}`);
+          }
+        }
 
+        // Remove the now-empty directory
+        await pfs.rmdir(dirPath);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+        // Directory doesn't exist, which is fine
+      }
+    }
+
+    async function cloneOrUpdateRepo(gitUrl, token, repoPath) {
+      const parsed = new URL(gitUrl);
+      const authUrl = `${parsed.protocol}//git:${token}@${parsed.host}${parsed.pathname}`;
+
+      try {
+        const gitDir = `${repoPath}/.git`;
+        try {
+          await pfs.stat(gitDir);
+          addLog("Repository exists, checking if it's complete...");
+
+          // Check if repository has any branches (indicates it's properly cloned)
+          let hasValidBranches = false;
+          let branches = [];
+          try {
+            branches = await git.listBranches({ fs, dir: repoPath });
+            hasValidBranches = branches && branches.length > 0;
+            if (hasValidBranches) {
+              addLog(`Found ${branches.length} branch(es): ${branches.join(', ')}`);
+            }
+          } catch (branchError) {
+            addLog(`Could not list branches: ${branchError.message}`);
+            hasValidBranches = false;
+          }
+
+          if (!hasValidBranches) {
+            // Repository exists but has no branches - likely corrupted/incomplete
+            addLog("Repository appears incomplete (no branches found). Re-cloning...");
+
+            // Remove the corrupted repository with force
+            try {
+              await removeDirectory(repoPath);
+              addLog("Removed incomplete repository");
+            } catch (removeError) {
+              addLog(`Warning: Could not remove incomplete repository: ${removeError.message}`);
+            }
+
+            // Re-clone fresh with progress logging
+            addLog(`Starting clone from: ${parsed.host}${parsed.pathname}`);
             await git.clone({
               fs,
               http: window.http,
@@ -1946,406 +1653,607 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               },
             });
 
-            addLog("Repository cloned successfully");
+            addLog("Repository re-cloned successfully");
+          } else {
+            // Repository is valid, but we need to handle conflicts properly
+            addLog("Repository is complete, resolving any conflicts and updating...");
+
+            try {
+              // First, check the working directory status
+              const status = await git.statusMatrix({
+                fs,
+                dir: repoPath,
+              });
+
+              const conflicts = status.filter(([filepath, head, workdir, stage]) =>
+                head !== workdir || head !== stage || workdir !== stage
+              );
+
+              if (conflicts.length > 0) {
+                addLog(`Found ${conflicts.length} local changes/conflicts:`);
+                conflicts.forEach(([filepath]) => {
+                  addLog(`  - ${filepath}`);
+                });
+
+                addStatus(`Resolving ${conflicts.length} local conflicts...`, "warning");
+
+                // Reset the working directory by removing conflicting files
+                for (const [filepath] of conflicts) {
+                  try {
+                    const fullPath = `${repoPath}/${filepath}`;
+                    await pfs.unlink(fullPath);
+                    addLog(`Removed conflicting file: ${filepath}`);
+                  } catch (removeError) {
+                    // File might not exist or be a directory
+                    try {
+                      await removeDirectory(`${repoPath}/${filepath}`);
+                      addLog(`Removed conflicting directory: ${filepath}`);
+                    } catch (dirError) {
+                      addLog(`Could not remove ${filepath}: ${removeError.message}`);
+                    }
+                  }
+                }
+
+                // Reset the index
+                try {
+                  for (const [filepath] of conflicts) {
+                    try {
+                      await git.resetIndex({
+                        fs,
+                        dir: repoPath,
+                        filepath: filepath,
+                      });
+                    } catch (resetError) {
+                      addLog(`Could not reset index for ${filepath}: ${resetError.message}`);
+                    }
+                  }
+                } catch (resetError) {
+                  addLog(`Index reset failed: ${resetError.message}`);
+                }
+
+                addStatus("Local conflicts resolved", "success");
+              }
+
+              // Get the current branch
+              const currentBranch = branches[0];
+              addLog(`Working with branch: ${currentBranch}`);
+
+              // Now fetch the latest changes with adaptive depth
+              addLog("Fetching latest changes...");
+              let fetchDepth = 1;
+              let maxDepth = 1000; // Safety limit
+              let remoteCommit = null;
+
+              while (fetchDepth <= maxDepth) {
+                try {
+                  await git.fetch({
+                    fs,
+                    http: window.http,
+                    dir: repoPath,
+                    url: authUrl,
+                    depth: fetchDepth,
+                    corsProxy: CORS_PROXY,
+                    onProgress: (progress) => {
+                      if (progress.phase) {
+                        addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                      }
+                    },
+                  });
+
+                  // Try to resolve the remote commit
+                  try {
+                    remoteCommit = await git.resolveRef({
+                      fs,
+                      dir: repoPath,
+                      ref: `origin/${currentBranch}`,
+                    });
+                    addLog(`Remote commit resolved: ${remoteCommit.substring(0, 8)} with depth ${fetchDepth}`);
+                    break; // Success, we have the remote commit
+                  } catch (resolveError) {
+                    addLog(`Remote commit not yet resolved with depth ${fetchDepth}, trying deeper...`);
+                  }
+                } catch (fetchError) {
+                  addLog(`Fetch failed with depth ${fetchDepth}: ${fetchError.message}`);
+                }
+
+                fetchDepth = Math.min(fetchDepth * 2, maxDepth);
+                if (fetchDepth >= maxDepth) {
+                  addLog(`Reached maximum depth ${maxDepth}, using full fetch...`);
+                  await git.fetch({
+                    fs,
+                    http: window.http,
+                    dir: repoPath,
+                    url: authUrl,
+                    corsProxy: CORS_PROXY,
+                    onProgress: (progress) => {
+                      if (progress.phase) {
+                        addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                      }
+                    },
+                  });
+                  remoteCommit = await git.resolveRef({
+                    fs,
+                    dir: repoPath,
+                    ref: `origin/${currentBranch}`,
+                  });
+                  break;
+                }
+              }
+
+              // Force reset to the remote commit
+              await git.checkout({
+                fs,
+                dir: repoPath,
+                ref: remoteCommit,
+                force: true,
+              });
+
+              // Attach to the branch
+              await git.checkout({
+                fs,
+                dir: repoPath,
+                ref: currentBranch,
+                force: true,
+              });
+
+              addLog("Repository updated successfully (forced to remote state)");
+
+            } catch (updateError) {
+              addLog(`Update failed: ${updateError.message}`);
+              addLog("Attempting complete repository refresh...");
+
+              // If all conflict resolution fails, remove and re-clone
+              try {
+                await removeDirectory(repoPath);
+                addLog("Removed problematic repository");
+
+                // Re-clone fresh
+                addLog(`Re-cloning from: ${parsed.host}${parsed.pathname}`);
+                await git.clone({
+                  fs,
+                  http: window.http,
+                  dir: repoPath,
+                  url: authUrl,
+                  singleBranch: true,
+                  corsProxy: CORS_PROXY,
+                  onProgress: (progress) => {
+                    if (progress.phase) {
+                      addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                    }
+                  },
+                  onMessage: (message) => {
+                    addLog(`Git: ${message}`);
+                  },
+                });
+
+                addLog("Repository re-cloned successfully after conflict");
+              } catch (cloneError) {
+                addLog(`Re-clone failed: ${cloneError.message}`);
+                throw cloneError;
+              }
+            }
           }
-        } catch (error) {
-          addLog(`Git error: ${error.message}`);
-          throw error;
+        } catch (e) {
+          addLog(`Cloning repository from: ${parsed.host}${parsed.pathname}`);
+
+          await git.clone({
+            fs,
+            http: window.http,
+            dir: repoPath,
+            url: authUrl,
+            singleBranch: true,
+            corsProxy: CORS_PROXY,
+            onProgress: (progress) => {
+              if (progress.phase) {
+                addLog(`Clone progress: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+              }
+            },
+            onMessage: (message) => {
+              addLog(`Git: ${message}`);
+            },
+          });
+
+          addLog("Repository cloned successfully");
         }
+      } catch (error) {
+        addLog(`Git error: ${error.message}`);
+        throw error;
       }
+    }
 
-      async function updateBibAndPush(repoPath, bibContent, gitUrl, token) {
-        const bibPath = `${repoPath}/references.bib`;
-        const parsed = new URL(gitUrl);
-        const authUrl = `${parsed.protocol}//git:${token}@${parsed.host}${parsed.pathname}`;
+    async function updateBibAndPush(repoPath, bibContent, gitUrl, token) {
+      const bibPath = `${repoPath}/references.bib`;
+      const parsed = new URL(gitUrl);
+      const authUrl = `${parsed.protocol}//git:${token}@${parsed.host}${parsed.pathname}`;
 
-        try {
-          addLog("Writing bibliography file...");
-          await pfs.writeFile(bibPath, bibContent, "utf8");
+      try {
+        addLog("Writing bibliography file...");
+        await pfs.writeFile(bibPath, bibContent, "utf8");
 
-          await git.add({
+        await git.add({
+          fs,
+          dir: repoPath,
+          filepath: "references.bib",
+        });
+
+        const status = await git.statusMatrix({
+          fs,
+          dir: repoPath,
+        });
+
+        const hasChanges = status.some(
+          ([filepath, head, workdir, stage]) =>
+            head !== 1 || workdir !== 1 || stage !== 1
+        );
+
+        if (hasChanges) {
+          addLog("Committing changes...");
+
+          await git.commit({
             fs,
             dir: repoPath,
-            filepath: "references.bib",
+            message: "Sync Zotero .bib",
+            author: {
+              name: "Zotero Sync",
+              email: "sync@zotero-overleaf.local",
+            },
           });
 
-          const status = await git.statusMatrix({
-            fs,
-            dir: repoPath,
-          });
+          addLog("Pushing to Overleaf...");
 
-          const hasChanges = status.some(
-            ([filepath, head, workdir, stage]) =>
-              head !== 1 || workdir !== 1 || stage !== 1
-          );
-
-          if (hasChanges) {
-            addLog("Committing changes...");
-
-            await git.commit({
+          // Get current branch name for push
+          let currentBranch;
+          try {
+            currentBranch = await git.currentBranch({
               fs,
               dir: repoPath,
-              message: "Sync Zotero .bib",
-              author: {
-                name: "Zotero Sync",
-                email: "sync@zotero-overleaf.local",
-              },
+              fullname: false,
             });
 
-            addLog("Pushing to Overleaf...");
-
-            // Get current branch name for push
-            let currentBranch;
-            try {
-              currentBranch = await git.currentBranch({
-                fs,
-                dir: repoPath,
-                fullname: false,
-              });
-              
-              if (!currentBranch) {
-                // Fallback: try to get the default branch
-                const branches = await git.listBranches({ fs, dir: repoPath });
-                currentBranch = branches[0] || 'master'; // Default to master if no branches found
-                addLog(`No current branch found, using fallback: ${currentBranch}`);
-              } else {
-                addLog(`Pushing branch: ${currentBranch}`);
-              }
-            } catch (branchError) {
-              addLog(`Could not determine current branch: ${branchError.message}`);
-              currentBranch = 'master'; // Ultimate fallback
-              addLog(`Using fallback branch: ${currentBranch}`);
+            if (!currentBranch) {
+              // Fallback: try to get the default branch
+              const branches = await git.listBranches({ fs, dir: repoPath });
+              currentBranch = branches[0] || 'master'; // Default to master if no branches found
+              addLog(`No current branch found, using fallback: ${currentBranch}`);
+            } else {
+              addLog(`Pushing branch: ${currentBranch}`);
             }
+          } catch (branchError) {
+            addLog(`Could not determine current branch: ${branchError.message}`);
+            currentBranch = 'master'; // Ultimate fallback
+            addLog(`Using fallback branch: ${currentBranch}`);
+          }
 
-            // First, try to pull latest changes and merge
-            try {
-              addLog("Pulling latest changes before push...");
-              await git.pull({
-                fs,
-                http: window.http,
-                dir: repoPath,
-                url: authUrl,
-                ref: currentBranch,
-                author: {
-                  name: "Zotero Sync",
-                  email: "sync@zotero-overleaf.local",
-                },
-                corsProxy: CORS_PROXY,
-              });
-              addLog("Successfully pulled and merged latest changes");
-            } catch (pullError) {
-              addLog(`Pull failed: ${pullError.message}`);
-              addLog("Attempting push without pull...");
-            }
-
-            // Now attempt the push (without force)
-            await git.push({
+          // First, try to pull latest changes and merge
+          try {
+            addLog("Pulling latest changes before push...");
+            await git.pull({
               fs,
               http: window.http,
               dir: repoPath,
               url: authUrl,
               ref: currentBranch,
-              corsProxy: CORS_PROXY,
-              onMessage: (message) => {
-                addLog(`Push: ${message}`);
+              author: {
+                name: "Zotero Sync",
+                email: "sync@zotero-overleaf.local",
               },
+              corsProxy: CORS_PROXY,
             });
-
-            addLog("Changes pushed successfully");
-            return true;
-          } else {
-            addLog("No changes detected");
-            return false;
+            addLog("Successfully pulled and merged latest changes");
+          } catch (pullError) {
+            addLog(`Pull failed: ${pullError.message}`);
+            addLog("Attempting push without pull...");
           }
-        } catch (error) {
-          addLog(`Update error: ${error.message}`);
-          throw error;
+
+          // Now attempt the push (without force)
+          await git.push({
+            fs,
+            http: window.http,
+            dir: repoPath,
+            url: authUrl,
+            ref: currentBranch,
+            corsProxy: CORS_PROXY,
+            onMessage: (message) => {
+              addLog(`Push: ${message}`);
+            },
+          });
+
+          addLog("Changes pushed successfully");
+          return true;
+        } else {
+          addLog("No changes detected");
+          return false;
         }
+      } catch (error) {
+        addLog(`Update error: ${error.message}`);
+        throw error;
+      }
+    }
+
+    // Main sync function
+    async function performSync() {
+      const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
+      if (zoteroUrl) {
+        parseZoteroUrl();
       }
 
-      // Main sync function
-      async function performSync() {
-        const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
-        if (zoteroUrl) {
-          parseZoteroUrl();
-        }
+      const zoteroUserId = document
+        .getElementById("zoteroUserId")
+        .value.trim();
+      const zoteroApiKey = document
+        .getElementById("zoteroApiKey")
+        .value.trim();
+      const zoteroCollection = document
+        .getElementById("zoteroCollection")
+        .value.trim();
+      const isGroup = document.getElementById("isGroup").checked;
+      const overleafGitUrl = document
+        .getElementById("overleafGitUrl")
+        .value.trim();
+      const overleafToken = document
+        .getElementById("overleafToken")
+        .value.trim();
 
-        const zoteroUserId = document
-          .getElementById("zoteroUserId")
-          .value.trim();
-        const zoteroApiKey = document
-          .getElementById("zoteroApiKey")
-          .value.trim();
-        const zoteroCollection = document
-          .getElementById("zoteroCollection")
-          .value.trim();
-        const isGroup = document.getElementById("isGroup").checked;
-        const overleafGitUrl = document
-          .getElementById("overleafGitUrl")
-          .value.trim();
-        const overleafToken = document
-          .getElementById("overleafToken")
-          .value.trim();
+      if (
+        !zoteroUserId ||
+        !zoteroApiKey ||
+        !overleafGitUrl ||
+        !overleafToken
+      ) {
+        alert("Please fill in all required fields");
+        return;
+      }
 
-        if (
-          !zoteroUserId ||
-          !zoteroApiKey ||
-          !overleafGitUrl ||
-          !overleafToken
-        ) {
-          alert("Please fill in all required fields");
-          return;
-        }
+      showProgress();
+      const syncButtons = document.querySelectorAll(".sync-button");
+      for (const button of syncButtons) {
+        button.disabled = true;
+      }
 
-        showProgress();
-        const syncButtons = document.querySelectorAll(".sync-button");
-        for (const button of syncButtons) {
-          button.disabled = true;
-        }
+      const repoPath = "/overleaf-repo";
 
-        const repoPath = "/overleaf-repo";
+      try {
+        addStatus("Connecting to Overleaf repository...", "info");
+        setProgress(20);
+        await cloneOrUpdateRepo(overleafGitUrl, overleafToken, repoPath);
+        addStatus("Repository ready", "success");
 
-        try {
-          addStatus("Connecting to Overleaf repository...", "info");
-          setProgress(20);
-          await cloneOrUpdateRepo(overleafGitUrl, overleafToken, repoPath);
-          addStatus("Repository ready", "success");
+        addStatus("Fetching bibliography from Zotero...", "info");
+        setProgress(50);
+        const bibContent = await fetchZoteroBib(
+          zoteroUserId,
+          zoteroApiKey,
+          zoteroCollection || null,
+          isGroup
+        );
+        addStatus("Bibliography fetched successfully", "success");
 
-          addStatus("Fetching bibliography from Zotero...", "info");
-          setProgress(50);
-          const bibContent = await fetchZoteroBib(
-            zoteroUserId,
-            zoteroApiKey,
-            zoteroCollection || null,
-            isGroup
-          );
-          addStatus("Bibliography fetched successfully", "success");
+        addStatus("Updating bibliography in repository...", "info");
+        setProgress(80);
+        const hasChanges = await updateBibAndPush(
+          repoPath,
+          bibContent,
+          overleafGitUrl,
+          overleafToken
+        );
 
-          addStatus("Updating bibliography in repository...", "info");
-          setProgress(80);
-          const hasChanges = await updateBibAndPush(
-            repoPath,
-            bibContent,
-            overleafGitUrl,
-            overleafToken
-          );
-
-          setProgress(100);
-          if (hasChanges) {
-            addStatus(
-              "Synchronization complete! Bibliography updated.",
-              "success"
-            );
-          } else {
-            addStatus(
-              "Synchronization complete! No changes needed.",
-              "success"
-            );
-          }
-
-          const overleafGitUrlPathname = new URL(overleafGitUrl).pathname;
-
+        setProgress(100);
+        if (hasChanges) {
           addStatus(
-            "Open Overleaf project to see changes: <a href='" +
-              "https://www.overleaf.com/project" +
-              overleafGitUrlPathname +
-              "' target='_blank' style='color: #2a5298; text-decoration: underline;'>Open Project</a>",
-            "info"
+            "Synchronization complete! Bibliography updated.",
+            "success"
           );
+        } else {
+          addStatus(
+            "Synchronization complete! No changes needed.",
+            "success"
+          );
+        }
 
-          if (document.getElementById("saveCredentials").checked) {
-            const data = getStorageData();
-            saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
-            const projectName = document
-              .getElementById("projectName")
-              .value.trim();
-            saveOverleafProject(
-              overleafGitUrl,
-              overleafToken,
-              zoteroUrl,
-              projectName,
-              data,
-              false
-            );
+        const overleafGitUrlPathname = new URL(overleafGitUrl).pathname;
+
+        addStatus(
+          "Open Overleaf project to see changes: <a href='" +
+          "https://www.overleaf.com/project" +
+          overleafGitUrlPathname +
+          "' target='_blank' style='color: #2a5298; text-decoration: underline;'>Open Project</a>",
+          "info"
+        );
+
+        if (document.getElementById("saveCredentials").checked) {
+          const data = getStorageData();
+          saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
+          const projectName = document
+            .getElementById("projectName")
+            .value.trim();
+          saveOverleafProject(
+            overleafGitUrl,
+            overleafToken,
+            zoteroUrl,
+            projectName,
+            data,
+            false
+          );
+          saveOverleafToken(overleafToken, data, false);
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+          addLog("Credentials, project, and token saved successfully");
+        }
+      } catch (error) {
+        console.error("Sync error:", error);
+        addStatus(`Error: ${error.message}`, "error");
+        addLog(`Full error: ${error.stack}`);
+      } finally {
+        for (const button of syncButtons) {
+          button.disabled = false;
+        }
+      }
+    }
+
+    // Copy bibliography function
+    async function copyBibliography() {
+      const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
+      if (zoteroUrl) {
+        parseZoteroUrl();
+      }
+
+      const zoteroUserId = document
+        .getElementById("zoteroUserId")
+        .value.trim();
+      const zoteroApiKey = document
+        .getElementById("zoteroApiKey")
+        .value.trim();
+      const zoteroCollection = document
+        .getElementById("zoteroCollection")
+        .value.trim();
+      const isGroup = document.getElementById("isGroup").checked;
+
+      if (!zoteroUserId || !zoteroApiKey) {
+        alert("Please provide Zotero User ID and API Key");
+        return;
+      }
+
+      showProgress();
+      const copyButton = document.querySelector(".copy-button");
+      copyButton.disabled = true;
+
+      try {
+        addStatus("Fetching bibliography from Zotero...", "info");
+        setProgress(50);
+        const bibContent = await fetchZoteroBib(
+          zoteroUserId,
+          zoteroApiKey,
+          zoteroCollection || null,
+          isGroup
+        );
+        addStatus("Bibliography fetched successfully", "success");
+
+        setProgress(80);
+        // Copy to clipboard
+        try {
+          await navigator.clipboard.writeText(bibContent);
+          addStatus("Bibliography copied to clipboard!", "success");
+        } catch (clipboardError) {
+          // Fallback for older browsers or denied clipboard access
+          const textArea = document.createElement('textarea');
+          textArea.value = bibContent;
+          textArea.style.position = 'fixed';
+          textArea.style.opacity = '0';
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            addStatus("Bibliography copied to clipboard! (fallback method)", "success");
+          } catch (fallbackError) {
+            addStatus("Could not copy to clipboard. Please copy manually from the logs below.", "error");
+            addLog("=== BIBLIOGRAPHY CONTENT ===");
+            addLog(bibContent);
+            addLog("=== END OF BIBLIOGRAPHY ===");
+          }
+          document.body.removeChild(textArea);
+        }
+        setProgress(100);
+
+        if (document.getElementById("saveCredentials").checked) {
+          const data = getStorageData();
+          const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
+          const overleafToken = document.getElementById("overleafToken").value.trim();
+          const projectName = document.getElementById("projectName").value.trim();
+          const overleafGitUrl = document.getElementById("overleafGitUrl").value.trim();
+
+          // Save Zotero credentials
+          saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
+
+          // Save Overleaf token if provided
+          if (overleafToken) {
             saveOverleafToken(overleafToken, data, false);
-            saveToStorage(data);
-            updateSavedCredentialsUI();
-            addLog("Credentials, project, and token saved successfully");
           }
-        } catch (error) {
-          console.error("Sync error:", error);
-          addStatus(`Error: ${error.message}`, "error");
-          addLog(`Full error: ${error.stack}`);
-        } finally {
-          for (const button of syncButtons) {
-            button.disabled = false;
+
+          // Save project if we have enough info
+          if (overleafGitUrl && overleafToken && zoteroUrl) {
+            saveOverleafProject(overleafGitUrl, overleafToken, zoteroUrl, projectName, data, false);
           }
+
+          saveToStorage(data);
+          updateSavedCredentialsUI();
+          addLog("All credentials and project data saved successfully");
         }
+      } catch (error) {
+        console.error("Copy error:", error);
+        addStatus(`Error: ${error.message}`, "error");
+        addLog(`Full error: ${error.stack}`);
+      } finally {
+        copyButton.disabled = false;
+      }
+    }
+
+    // Clear repository cache function
+    async function clearRepositoryCache() {
+      const repoPath = "/overleaf-repo";
+
+      if (!confirm("This will clear all cached repository data. You'll need to clone the repository fresh on next sync. Continue?")) {
+        return;
       }
 
-      // Copy bibliography function
-      async function copyBibliography() {
-        const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
-        if (zoteroUrl) {
-          parseZoteroUrl();
-        }
+      try {
+        addLog("Clearing repository cache...");
+        addStatus("Clearing repository cache...", "info");
 
-        const zoteroUserId = document
-          .getElementById("zoteroUserId")
-          .value.trim();
-        const zoteroApiKey = document
-          .getElementById("zoteroApiKey")
-          .value.trim();
-        const zoteroCollection = document
-          .getElementById("zoteroCollection")
-          .value.trim();
-        const isGroup = document.getElementById("isGroup").checked;
-
-        if (!zoteroUserId || !zoteroApiKey) {
-          alert("Please provide Zotero User ID and API Key");
-          return;
-        }
-
-        showProgress();
-        const copyButton = document.querySelector(".copy-button");
-        copyButton.disabled = true;
-
+        // Remove the entire repository directory
         try {
-          addStatus("Fetching bibliography from Zotero...", "info");
-          setProgress(50);
-          const bibContent = await fetchZoteroBib(
-            zoteroUserId,
-            zoteroApiKey,
-            zoteroCollection || null,
-            isGroup
-          );
-          addStatus("Bibliography fetched successfully", "success");
-
-          setProgress(80);
-          // Copy to clipboard
-          try {
-            await navigator.clipboard.writeText(bibContent);
-            addStatus("Bibliography copied to clipboard!", "success");
-          } catch (clipboardError) {
-            // Fallback for older browsers or denied clipboard access
-            const textArea = document.createElement('textarea');
-            textArea.value = bibContent;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-              document.execCommand('copy');
-              addStatus("Bibliography copied to clipboard! (fallback method)", "success");
-            } catch (fallbackError) {
-              addStatus("Could not copy to clipboard. Please copy manually from the logs below.", "error");
-              addLog("=== BIBLIOGRAPHY CONTENT ===");
-              addLog(bibContent);
-              addLog("=== END OF BIBLIOGRAPHY ===");
-            }
-            document.body.removeChild(textArea);
-          }
-          setProgress(100);
-
-          if (document.getElementById("saveCredentials").checked) {
-            const data = getStorageData();
-            const zoteroUrl = document.getElementById("zoteroUrl").value.trim();
-            const overleafToken = document.getElementById("overleafToken").value.trim();
-            const projectName = document.getElementById("projectName").value.trim();
-            const overleafGitUrl = document.getElementById("overleafGitUrl").value.trim();
-            
-            // Save Zotero credentials
-            saveZoteroCredential(zoteroUserId, zoteroApiKey, data, false);
-            
-            // Save Overleaf token if provided
-            if (overleafToken) {
-              saveOverleafToken(overleafToken, data, false);
-            }
-            
-            // Save project if we have enough info
-            if (overleafGitUrl && overleafToken && zoteroUrl) {
-              saveOverleafProject(overleafGitUrl, overleafToken, zoteroUrl, projectName, data, false);
-            }
-            
-            saveToStorage(data);
-            updateSavedCredentialsUI();
-            addLog("All credentials and project data saved successfully");
-          }
+          await removeDirectory(repoPath);
+          addLog("Repository cache cleared successfully");
+          addStatus("Repository cache cleared! Next sync will clone fresh.", "success");
         } catch (error) {
-          console.error("Copy error:", error);
-          addStatus(`Error: ${error.message}`, "error");
-          addLog(`Full error: ${error.stack}`);
-        } finally {
-          copyButton.disabled = false;
-        }
-      }
-
-      // Clear repository cache function
-      async function clearRepositoryCache() {
-        const repoPath = "/overleaf-repo";
-        
-        if (!confirm("This will clear all cached repository data. You'll need to clone the repository fresh on next sync. Continue?")) {
-          return;
-        }
-
-        try {
-          addLog("Clearing repository cache...");
-          addStatus("Clearing repository cache...", "info");
-          
-          // Remove the entire repository directory
-          try {
-            await removeDirectory(repoPath);
-            addLog("Repository cache cleared successfully");
-            addStatus("Repository cache cleared! Next sync will clone fresh.", "success");
-          } catch (error) {
-            if (error.code === 'ENOENT') {
-              addLog("No repository cache found to clear");
-              addStatus("No repository cache found - already clean!", "info");
-            } else {
-              throw error;
-            }
+          if (error.code === 'ENOENT') {
+            addLog("No repository cache found to clear");
+            addStatus("No repository cache found - already clean!", "info");
+          } else {
+            throw error;
           }
-        } catch (error) {
-          console.error("Clear cache error:", error);
-          addStatus(`Error clearing cache: ${error.message}`, "error");
-          addLog(`Full error: ${error.stack}`);
         }
+      } catch (error) {
+        console.error("Clear cache error:", error);
+        addStatus(`Error clearing cache: ${error.message}`, "error");
+        addLog(`Full error: ${error.stack}`);
       }
+    }
 
-      function initUI() {
-        document
-          .getElementById("savedOverleafProjects")
-          .addEventListener("change", loadOverleafProject);
-        document
-          .getElementById("savedOverleafTokens")
-          .addEventListener("change", loadOverleafToken);
-        document
-          .getElementById("savedZoteroCredentials")
-          .addEventListener("change", loadZoteroCredential);
-      }
+    function initUI() {
+      document
+        .getElementById("savedOverleafProjects")
+        .addEventListener("change", loadOverleafProject);
+      document
+        .getElementById("savedOverleafTokens")
+        .addEventListener("change", loadOverleafToken);
+      document
+        .getElementById("savedZoteroCredentials")
+        .addEventListener("change", loadZoteroCredential);
+    }
 
-      // Initialize on page load
-      document.addEventListener("DOMContentLoaded", function () {
-        initUI();
-        loadFromStorage();
-      });
+    // Initialize on page load
+    document.addEventListener("DOMContentLoaded", function () {
+      initUI();
+      loadFromStorage();
+    });
 
-      // Make functions available globally
-      window.performSync = performSync;
-      window.copyBibliography = copyBibliography;
-      window.clearRepositoryCache = clearRepositoryCache;
-      window.startOAuth = startOAuth;
-      window.cancelOAuth = cancelOAuth;
-      window.completeOAuth = completeOAuth;
-      window.parseZoteroUrl = parseZoteroUrl;
-      window.loadZoteroCredential = loadZoteroCredential;
-      window.loadOverleafProject = loadOverleafProject;
-      window.loadOverleafToken = loadOverleafToken;
-      window.deleteZoteroCredential = deleteZoteroCredential;
-      window.deleteOverleafProject = deleteOverleafProject;
-      window.deleteOverleafToken = deleteOverleafToken;
-      window.updateOAuthVisibility = updateOAuthVisibility;
-      window.clearLogs = clearLogs;
-    </script>
-  </body>
+    // Make functions available globally
+    window.performSync = performSync;
+    window.copyBibliography = copyBibliography;
+    window.clearRepositoryCache = clearRepositoryCache;
+    window.startOAuth = startOAuth;
+    window.cancelOAuth = cancelOAuth;
+    window.completeOAuth = completeOAuth;
+    window.parseZoteroUrl = parseZoteroUrl;
+    window.loadZoteroCredential = loadZoteroCredential;
+    window.loadOverleafProject = loadOverleafProject;
+    window.loadOverleafToken = loadOverleafToken;
+    window.deleteZoteroCredential = deleteZoteroCredential;
+    window.deleteOverleafProject = deleteOverleafProject;
+    window.deleteOverleafToken = deleteOverleafToken;
+    window.updateOAuthVisibility = updateOAuthVisibility;
+    window.clearLogs = clearLogs;
+  </script>
+</body>
+
 </html>
