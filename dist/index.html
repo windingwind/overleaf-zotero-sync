@@ -1735,7 +1735,6 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
                 dir: repoPath,
                 url: authUrl,
                 singleBranch: true,
-                depth: 1,
                 corsProxy: CORS_PROXY,
                 onProgress: (progress) => {
                   if (progress.phase) {
@@ -1815,7 +1814,13 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
                   http: window.http,
                   dir: repoPath,
                   url: authUrl,
+                  depth: 100,
                   corsProxy: CORS_PROXY,
+                  onProgress: (progress) => {
+                    if (progress.phase) {
+                      addLog(`Fetch: ${progress.phase} - ${progress.loaded || 0}/${progress.total || '?'} objects`);
+                    }
+                  },
                 });
 
                 // Get the current and remote branches
@@ -1845,6 +1850,14 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
                   force: true,
                 });
 
+                // Attach to the branch
+                await git.checkout({
+                  fs,
+                  dir: repoPath,
+                  ref: currentBranch,
+                  force: true,
+                });
+
                 addLog("Repository updated successfully (forced to remote state)");
 
               } catch (updateError) {
@@ -1864,7 +1877,6 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
                     dir: repoPath,
                     url: authUrl,
                     singleBranch: true,
-                    depth: 1,
                     corsProxy: CORS_PROXY,
                     onProgress: (progress) => {
                       if (progress.phase) {
@@ -1892,7 +1904,6 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               dir: repoPath,
               url: authUrl,
               singleBranch: true,
-              depth: 1,
               corsProxy: CORS_PROXY,
               onProgress: (progress) => {
                 if (progress.phase) {
@@ -2004,6 +2015,9 @@ https://www.zotero.org/groups/$groupID/$groupName/collections/$collectionID"
               url: authUrl,
               ref: currentBranch,
               corsProxy: CORS_PROXY,
+              onMessage: (message) => {
+                addLog(`Push: ${message}`);
+              },
             });
 
             addLog("Changes pushed successfully");
